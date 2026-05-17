@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { getJobApplicationList, type JobApplicationVo } from '@/api/application'
+import { getCompanyList, type CompanyVo } from '@/api/company'
 import {
   createInterviewRound,
   deleteInterviewRound,
@@ -20,13 +21,26 @@ import { formatDate } from '@/utils/format'
 const router = useRouter()
 const appStore = useAppStore()
 const applications = ref<JobApplicationVo[]>([])
+const companies = ref<CompanyVo[]>([])
 const filterApplicationId = ref<number>()
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 
-const appMap = ref<Record<number, string>>({})
+const companyMap = computed(() =>
+  Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
+)
+
+const appMap = computed(() =>
+  Object.fromEntries(
+    applications.value.map((a) => {
+      const companyName = a.companyId ? companyMap.value[a.companyId] : undefined
+      const label = `${a.positionName ?? ''}${companyName ? ` (${companyName})` : ''}`.trim()
+      return [a.id, label || `#${a.id}`]
+    }),
+  ),
+)
 
 const { loading, list, total, page, size, load, handlePageChange, handleSizeChange } =
   usePagination<InterviewRoundVo>((p, s) => {
@@ -53,11 +67,12 @@ const rules: FormRules = {
 const dialogTitle = ref('新增面试')
 
 async function fetchApplications() {
-  const res = await getJobApplicationList({ page: 1, size: 100, userId: appStore.currentUserId })
+  const [res, companyRes] = await Promise.all([
+    getJobApplicationList({ page: 1, size: 100, userId: appStore.currentUserId }),
+    getCompanyList({ page: 1, size: 100, userId: appStore.currentUserId }),
+  ])
   applications.value = res.content
-  appMap.value = Object.fromEntries(
-    res.content.map((a) => [a.id, `${a.positionName}${a.companyId ? ` (#${a.companyId})` : ''}`]),
-  )
+  companies.value = companyRes.content
 }
 
 function openCreate() {
