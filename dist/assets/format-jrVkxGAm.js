@@ -1,0 +1,1 @@
+function e(e){return e?e.replace(`T`,` `).slice(0,16):`-`}function t(e,t,n){if(e==null&&t==null)return`-`;let r=e!=null&&t!=null?`${e}k - ${t}k`:`${e??t}k`;return n?`${r} · ${n}薪`:r}function n(e){return e==null?`-`:`${e.toLocaleString()} 元`}export{n,t as r,e as t};
