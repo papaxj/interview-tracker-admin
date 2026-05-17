@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getInterviewRoundList, updateInterviewRound, type InterviewRoundVo } from '@/api/interview'
 import { getJobApplicationList } from '@/api/application'
+import { getCompanyList } from '@/api/company'
 import { KANBAN_COLUMNS } from '@/constants/enums'
 import { useAppStore } from '@/stores/app'
 import { formatDate } from '@/utils/format'
@@ -25,13 +26,26 @@ const columns = computed(() =>
 async function loadData() {
   loading.value = true
   try {
-    const [roundRes, appRes] = await Promise.all([
-      getInterviewRoundList({ page: 1, size: 200 }),
-      getJobApplicationList({ page: 1, size: 100, userId: appStore.currentUserId }),
+    const userId = appStore.currentUserId
+    const [roundRes, appRes, companyRes] = await Promise.all([
+      getInterviewRoundList({ page: 1, size: 100 }),
+      getJobApplicationList({ page: 1, size: 100, userId }),
+      getCompanyList({ page: 1, size: 100, userId }),
     ])
-    const appIds = new Set(appRes.content.map((a) => a.id))
-    rounds.value = roundRes.content.filter((r) => appIds.has(r.applicationId!))
-    appMap.value = Object.fromEntries(appRes.content.map((a) => [a.id, a.positionName ?? `#${a.id}`]))
+    const companyMap = Object.fromEntries(companyRes.content.map((c) => [c.id, c.name]))
+    const appIds = new Set(appRes.content.map((a) => Number(a.id)))
+    rounds.value = roundRes.content.filter(
+      (r) => r.applicationId != null && appIds.has(Number(r.applicationId)),
+    )
+    appMap.value = Object.fromEntries(
+      appRes.content.map((a) => {
+        const companyName = a.companyId ? companyMap[a.companyId] : undefined
+        const label = `${a.positionName ?? ''}${companyName ? ` (${companyName})` : ''}`.trim()
+        return [a.id, label || `#${a.id}`]
+      }),
+    )
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '加载失败')
   } finally {
     loading.value = false
   }
