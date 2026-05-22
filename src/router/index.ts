@@ -63,6 +63,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/offer/index.vue'),
         meta: { title: 'Offer' },
       },
+      {
+        path: 'dict',
+        name: 'Dict',
+        component: () => import('@/views/dict/index.vue'),
+        meta: { title: '数据字典' },
+      },
     ],
   },
 ]

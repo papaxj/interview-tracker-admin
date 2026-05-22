@@ -12,8 +12,10 @@ import {
   type JobApplicationVo,
 } from '@/api/application'
 import { getCompanyList, type CompanyVo } from '@/api/company'
+import { getDictItemsByTypeCode } from '@/api/dict'
+import type { SysDictItemVo } from '@/api/dict'
 import { usePagination } from '@/composables/usePagination'
-import { APPLICATION_STAGE, APPLICATION_STATUS, PRIORITY_LEVEL } from '@/constants/enums'
+import { APPLICATION_STATUS, PRIORITY_LEVEL } from '@/constants/enums'
 import { useAppStore } from '@/stores/app'
 import { formatDate, formatSalary } from '@/utils/format'
 
@@ -25,6 +27,19 @@ const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const filterCompanyId = ref<number>()
+
+// 从数据字典加载当前阶段选项
+const stageOptions = ref<SysDictItemVo[]>([])
+
+async function fetchStageOptions() {
+  try {
+    const items = await getDictItemsByTypeCode('application_stage')
+    stageOptions.value = items ?? []
+  } catch {
+    // 接口异常时保持空数组，不影响页面使用
+    stageOptions.value = []
+  }
+}
 
 const companyMap = computed(() =>
   Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
@@ -54,7 +69,7 @@ const defaultForm = (): JobApplicationSaveRequest => ({
   source: '',
   sourceLink: '',
   applyDate: new Date().toISOString().slice(0, 10),
-  currentStage: '简历筛选',
+  currentStage: stageOptions.value[0]?.label ?? '',
   status: '进行中',
   priorityLevel: 2,
   expectedSalary: undefined,
@@ -143,6 +158,7 @@ function goDetail(id: number) {
 }
 
 onMounted(async () => {
+  await fetchStageOptions()
   await fetchCompanies()
   await fetchList()
 })
@@ -271,7 +287,7 @@ onMounted(async () => {
         <el-col :span="12">
           <el-form-item label="当前阶段">
             <el-select v-model="form.currentStage" style="width: 100%">
-              <el-option v-for="s in APPLICATION_STAGE" :key="s.value" :label="s.label" :value="s.value" />
+              <el-option v-for="s in stageOptions" :key="s.id" :label="s.label" :value="s.label" />
             </el-select>
           </el-form-item>
         </el-col>

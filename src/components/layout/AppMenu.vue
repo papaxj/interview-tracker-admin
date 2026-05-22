@@ -8,6 +8,7 @@ import {
   Document,
   Calendar,
   Trophy,
+  Collection,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -23,6 +24,7 @@ const menuItems = [
   { path: '/interview', title: '面试管理', icon: Calendar },
   { path: '/interview/kanban', title: '面试看板', icon: Calendar },
   { path: '/offer', title: 'Offer', icon: Trophy },
+  { path: '/dict', title: '数据字典', icon: Collection },
 ]
 
 function navigate(path: string) {
