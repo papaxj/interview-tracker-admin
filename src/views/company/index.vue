@@ -66,7 +66,7 @@ onMounted(fetchList)
         @input="filterList"
         @clear="filterList"
       />
-      <el-button @click="fetchList">刷新</el-button>
+      <el-button @click="fetchList">查询</el-button>
     </div>
 
     <el-table v-loading="loading" :data="displayList" stripe>
