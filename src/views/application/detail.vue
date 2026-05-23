@@ -18,6 +18,8 @@ import {
 } from '@/api/interview'
 import { getOffersByApplication } from '@/api/offer'
 import type { OfferInfoVo } from '@/api/offer'
+import { getDictItemsByTypeCode } from '@/api/dict'
+import type { SysDictItemVo } from '@/api/dict'
 import { INTERVIEW_RESULT } from '@/constants/enums'
 import { formatDate, formatSalary } from '@/utils/format'
 
@@ -35,6 +37,18 @@ const roundDialogVisible = ref(false)
 const editingRoundId = ref<number | null>(null)
 const roundFormRef = ref<FormInstance>()
 const roundSubmitting = ref(false)
+
+// 从数据字典加载面试方式选项
+const interviewMethodOptions = ref<SysDictItemVo[]>([])
+
+async function fetchDictOptions() {
+  try {
+    const items = await getDictItemsByTypeCode('interview_method')
+    interviewMethodOptions.value = items ?? []
+  } catch {
+    interviewMethodOptions.value = []
+  }
+}
 
 const defaultRoundForm = (): InterviewRoundSaveRequest => ({
   applicationId: applicationId.value,
@@ -131,7 +145,10 @@ function goBack() {
   router.push('/application')
 }
 
-onMounted(loadData)
+onMounted(async () => {
+  await fetchDictOptions()
+  await loadData()
+})
 </script>
 
 <template>
@@ -231,7 +248,9 @@ onMounted(loadData)
           <el-input v-model="roundForm.interviewer" />
         </el-form-item>
         <el-form-item label="面试方式">
-          <el-input v-model="roundForm.interviewMethod" placeholder="视频/现场/电话" />
+          <el-select v-model="roundForm.interviewMethod" placeholder="请选择" style="width: 100%" clearable>
+            <el-option v-for="m in interviewMethodOptions" :key="m.id" :label="m.label" :value="m.label" />
+          </el-select>
         </el-form-item>
         <el-form-item label="面试时间">
           <el-date-picker

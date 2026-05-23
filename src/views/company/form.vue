@@ -20,15 +20,25 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
 
-// 从数据字典加载融资阶段选项
+// 从数据字典加载选项
 const financingStageOptions = ref<SysDictItemVo[]>([])
+const companySizeOptions = ref<SysDictItemVo[]>([])
+const cityOptions = ref<SysDictItemVo[]>([])
 
-async function fetchFinancingStageOptions() {
+async function fetchDictOptions() {
   try {
-    const items = await getDictItemsByTypeCode('financing_stage')
-    financingStageOptions.value = items ?? []
+    const [stages, sizes, cities] = await Promise.all([
+      getDictItemsByTypeCode('financing_stage'),
+      getDictItemsByTypeCode('company_size'),
+      getDictItemsByTypeCode('city'),
+    ])
+    financingStageOptions.value = stages ?? []
+    companySizeOptions.value = sizes ?? []
+    cityOptions.value = cities ?? []
   } catch {
     financingStageOptions.value = []
+    companySizeOptions.value = []
+    cityOptions.value = []
   }
 }
 
@@ -103,7 +113,7 @@ function goBack() {
 }
 
 onMounted(async () => {
-  await fetchFinancingStageOptions()
+  await fetchDictOptions()
   await loadDetail()
 })
 </script>
@@ -126,12 +136,16 @@ onMounted(async () => {
         </el-col>
         <el-col :span="12">
           <el-form-item label="城市">
-            <el-input v-model="form.city" placeholder="如：北京" />
+            <el-select v-model="form.city" placeholder="请选择" style="width: 100%" clearable>
+              <el-option v-for="s in cityOptions" :key="s.id" :label="s.label" :value="s.label" />
+            </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="公司规模">
-            <el-input v-model="form.companySize" placeholder="如：500-1000人" />
+            <el-select v-model="form.companySize" placeholder="请选择" style="width: 100%" clearable>
+              <el-option v-for="s in companySizeOptions" :key="s.id" :label="s.label" :value="s.label" />
+            </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">

@@ -28,16 +28,22 @@ const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const filterCompanyId = ref<number>()
 
-// 从数据字典加载当前阶段选项
+// 从数据字典加载选项
 const stageOptions = ref<SysDictItemVo[]>([])
+const cityOptions = ref<SysDictItemVo[]>([])
 
-async function fetchStageOptions() {
+async function fetchDictOptions() {
   try {
-    const items = await getDictItemsByTypeCode('application_stage')
-    stageOptions.value = items ?? []
+    const [stages, cities] = await Promise.all([
+      getDictItemsByTypeCode('application_stage'),
+      getDictItemsByTypeCode('city'),
+    ])
+    stageOptions.value = stages ?? []
+    cityOptions.value = cities ?? []
   } catch {
     // 接口异常时保持空数组，不影响页面使用
     stageOptions.value = []
+    cityOptions.value = []
   }
 }
 
@@ -158,7 +164,7 @@ function goDetail(id: number) {
 }
 
 onMounted(async () => {
-  await fetchStageOptions()
+  await fetchDictOptions()
   await fetchCompanies()
   await fetchList()
 })
@@ -262,7 +268,9 @@ onMounted(async () => {
         </el-col>
         <el-col :span="12">
           <el-form-item label="工作城市">
-            <el-input v-model="form.workCity" />
+            <el-select v-model="form.workCity" placeholder="请选择" style="width: 100%" clearable>
+              <el-option v-for="c in cityOptions" :key="c.id" :label="c.label" :value="c.label" />
+            </el-select>
           </el-form-item>
         </el-col>
       </el-row>

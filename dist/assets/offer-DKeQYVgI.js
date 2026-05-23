@@ -1,1 +1,0 @@
-import{i as e}from"./index-Dv2o6UFO.js";function t(t){return e.get(`/offers`,{params:t})}function n(t){return e.get(`/offers/by-application/${t}`)}function r(t){return e.post(`/offers`,t)}function i(t,n){return e.put(`/offers/${t}`,n)}function a(t){return e.delete(`/offers/${t}`)}export{i as a,n as i,a as n,t as r,r as t};

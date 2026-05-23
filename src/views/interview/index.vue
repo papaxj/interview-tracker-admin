@@ -13,6 +13,8 @@ import {
   type InterviewRoundSaveRequest,
   type InterviewRoundVo,
 } from '@/api/interview'
+import { getDictItemsByTypeCode } from '@/api/dict'
+import type { SysDictItemVo } from '@/api/dict'
 import { usePagination } from '@/composables/usePagination'
 import { INTERVIEW_RESULT } from '@/constants/enums'
 import { useAppStore } from '@/stores/app'
@@ -27,6 +29,18 @@ const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
+
+// 从数据字典加载面试方式选项
+const interviewMethodOptions = ref<SysDictItemVo[]>([])
+
+async function fetchDictOptions() {
+  try {
+    const items = await getDictItemsByTypeCode('interview_method')
+    interviewMethodOptions.value = items ?? []
+  } catch {
+    interviewMethodOptions.value = []
+  }
+}
 
 const companyMap = computed(() =>
   Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
@@ -136,6 +150,7 @@ function goKanban() {
 }
 
 onMounted(async () => {
+  await fetchDictOptions()
   await fetchApplications()
   await load()
 })
@@ -244,7 +259,9 @@ onMounted(async () => {
         <el-input v-model="form.interviewer" />
       </el-form-item>
       <el-form-item label="面试方式">
-        <el-input v-model="form.interviewMethod" />
+        <el-select v-model="form.interviewMethod" placeholder="请选择" style="width: 100%" clearable>
+          <el-option v-for="m in interviewMethodOptions" :key="m.id" :label="m.label" :value="m.label" />
+        </el-select>
       </el-form-item>
       <el-form-item label="面试时间">
         <el-date-picker
