@@ -224,17 +224,6 @@ onMounted(loadData)
             </div>
             <div class="kanban-card__meta">{{ formatDate(item.interviewTime) }}</div>
             <div v-if="item.interviewer" class="kanban-card__meta">面试官：{{ item.interviewer }}</div>
-            <el-select
-              :model-value="item.result || '待安排'"
-              size="small"
-              class="kanban-card__select"
-              :disabled="savingId === item.id"
-              @mousedown.stop
-              @click.stop
-              @change="(v: string) => moveCard(item, v)"
-            >
-              <el-option v-for="c in KANBAN_COLUMNS" :key="c" :label="c" :value="c" />
-            </el-select>
           </div>
           <el-empty v-if="!col.items.length" description="拖入此处" :image-size="48" />
         </div>
@@ -377,12 +366,6 @@ onMounted(loadData)
     color: #999;
     line-height: 1.6;
     padding-left: 20px;
-  }
-
-  &__select {
-    width: 100%;
-    margin-top: 8px;
-    cursor: default;
   }
 }
 </style>
