@@ -9,6 +9,8 @@ import {
   updateCompany,
   type CompanySaveRequest,
 } from '@/api/company'
+import { getDictItemsByTypeCode } from '@/api/dict'
+import type { SysDictItemVo } from '@/api/dict'
 import { useAppStore } from '@/stores/app'
 
 const route = useRoute()
@@ -17,6 +19,18 @@ const appStore = useAppStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
+
+// 从数据字典加载融资阶段选项
+const financingStageOptions = ref<SysDictItemVo[]>([])
+
+async function fetchFinancingStageOptions() {
+  try {
+    const items = await getDictItemsByTypeCode('financing_stage')
+    financingStageOptions.value = items ?? []
+  } catch {
+    financingStageOptions.value = []
+  }
+}
 
 const isEdit = computed(() => Boolean(route.params.id))
 const companyId = computed(() => Number(route.params.id))
@@ -88,7 +102,10 @@ function goBack() {
   router.push('/company')
 }
 
-onMounted(loadDetail)
+onMounted(async () => {
+  await fetchFinancingStageOptions()
+  await loadDetail()
+})
 </script>
 
 <template>
@@ -119,7 +136,9 @@ onMounted(loadDetail)
         </el-col>
         <el-col :span="12">
           <el-form-item label="融资阶段">
-            <el-input v-model="form.financingStage" placeholder="如：C轮" />
+            <el-select v-model="form.financingStage" placeholder="请选择" style="width: 100%" clearable>
+              <el-option v-for="s in financingStageOptions" :key="s.id" :label="s.label" :value="s.label" />
+            </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">

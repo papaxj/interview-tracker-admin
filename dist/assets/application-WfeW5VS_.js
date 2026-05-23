@@ -1,0 +1,1 @@
+import{i as e}from"./index-Dv2o6UFO.js";function t(t){return e.get(`/job-applications`,{params:t})}function n(t){return e.get(`/job-applications/${t}`)}function r(t){return e.post(`/job-applications`,t)}function i(t,n){return e.put(`/job-applications/${t}`,n)}function a(t){return e.delete(`/job-applications/${t}`)}export{i as a,t as i,a as n,n as r,r as t};
