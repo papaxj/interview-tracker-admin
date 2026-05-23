@@ -1,1 +1,0 @@
-import{i as e}from"./index-0-_ckFEs.js";function t(t){return e.get(`/interview-rounds`,{params:t})}function n(t){return e.post(`/interview-rounds`,t)}function r(t,n){return e.put(`/interview-rounds/${t}`,n)}function i(t){return e.delete(`/interview-rounds/${t}`)}export{r as i,i as n,t as r,n as t};

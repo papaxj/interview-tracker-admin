@@ -102,13 +102,13 @@ function openRoundEdit(row: InterviewRoundVo) {
     interviewerTitle: row.interviewerTitle ?? '',
     interviewMethod: row.interviewMethod ?? '',
     meetingLink: row.meetingLink ?? '',
-    interviewTime: row.interviewTime?.slice(0, 16) ?? '',
+    interviewTime: row.interviewTime?.slice(0, 19) ?? '',
     durationMinutes: row.durationMinutes,
     result: row.result ?? '待安排',
     score: row.score,
     summary: row.summary ?? '',
     feedback: row.feedback ?? '',
-    nextRoundTime: row.nextRoundTime?.slice(0, 16) ?? '',
+    nextRoundTime: row.nextRoundTime?.slice(0, 19) ?? '',
   })
   roundDialogVisible.value = true
 }
