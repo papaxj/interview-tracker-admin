@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
+import { computed, onMounted, ref } from 'vue'
+import type { FormRules } from 'element-plus'
 import { getJobApplicationList, type JobApplicationVo } from '@/api/application'
 import {
   createOffer,
@@ -12,16 +11,13 @@ import {
   type OfferInfoVo,
 } from '@/api/offer'
 import { usePagination } from '@/composables/usePagination'
+import { useCrudDialog } from '@/composables/useCrudDialog'
 import { OFFER_STATUS } from '@/constants/enums'
 import { useAppStore } from '@/stores/app'
 import { formatDate, formatMoney } from '@/utils/format'
 
 const appStore = useAppStore()
 const applications = ref<JobApplicationVo[]>([])
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
-const formRef = ref<FormInstance>()
-const submitting = ref(false)
 const filterStatus = ref('')
 
 const appMap = computed(() =>
@@ -40,28 +36,34 @@ const defaultForm = (): OfferInfoSaveRequest => ({
   status: '待确认',
 })
 
-const form = reactive<OfferInfoSaveRequest>(defaultForm())
-
 const rules: FormRules = {
   applicationId: [{ required: true, message: '请选择投递', trigger: 'change' }],
 }
 
-const dialogTitle = computed(() => (editingId.value ? '编辑 Offer' : '新增 Offer'))
+const {
+  dialogVisible,
+  editingId,
+  submitting,
+  formRef,
+  form,
+  dialogTitle,
+  openCreate,
+  openEdit,
+  doSubmit,
+  doDelete,
+} = useCrudDialog<OfferInfoSaveRequest>({
+  label: 'Offer',
+  defaultForm,
+  onSaved: load,
+})
 
 async function fetchApplications() {
   const res = await getJobApplicationList({ page: 1, size: 100, userId: appStore.currentUserId })
   applications.value = res.content
 }
 
-function openCreate() {
-  editingId.value = null
-  Object.assign(form, defaultForm())
-  dialogVisible.value = true
-}
-
-function openEdit(row: OfferInfoVo) {
-  editingId.value = row.id
-  Object.assign(form, {
+function handleOpenEdit(row: OfferInfoVo) {
+  openEdit(row.id, {
     applicationId: row.applicationId ?? 0,
     baseSalary: row.baseSalary,
     bonusSalary: row.bonusSalary,
@@ -73,35 +75,18 @@ function openEdit(row: OfferInfoVo) {
     joinDate: row.joinDate?.slice(0, 10) ?? '',
     status: row.status ?? '待确认',
     remark: row.remark ?? '',
-  })
-  dialogVisible.value = true
+  } as Partial<OfferInfoSaveRequest>)
 }
 
 async function handleSubmit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-
-  submitting.value = true
-  try {
-    if (editingId.value) {
-      await updateOffer(editingId.value, { ...form })
-      ElMessage.success('更新成功')
-    } else {
-      await createOffer({ ...form })
-      ElMessage.success('创建成功')
-    }
-    dialogVisible.value = false
-    load()
-  } finally {
-    submitting.value = false
-  }
+  await doSubmit(
+    () => createOffer({ ...form }),
+    () => updateOffer(editingId.value!, { ...form }),
+  )
 }
 
 async function handleDelete(row: OfferInfoVo) {
-  await ElMessageBox.confirm('确定删除该 Offer？', '提示', { type: 'warning' })
-  await deleteOffer(row.id)
-  ElMessage.success('删除成功')
-  load()
+  await doDelete(row.id, '', () => deleteOffer(row.id))
 }
 
 onMounted(async () => {
@@ -154,7 +139,7 @@ onMounted(async () => {
       </el-table-column>
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+          <el-button link type="primary" @click="handleOpenEdit(row)">编辑</el-button>
           <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -245,21 +230,4 @@ onMounted(async () => {
   </el-dialog>
 </template>
 
-<style scoped lang="scss">
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.pagination {
-  margin-top: 16px;
-  justify-content: flex-end;
-}
-</style>

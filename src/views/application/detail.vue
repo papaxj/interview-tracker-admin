@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
+import type { FormRules } from 'element-plus'
 import {
   getJobApplicationDetail,
   type JobApplicationVo,
@@ -18,8 +17,9 @@ import {
 } from '@/api/interview'
 import { getOffersByApplication } from '@/api/offer'
 import type { OfferInfoVo } from '@/api/offer'
-import { getDictItemsByTypeCode } from '@/api/dict'
 import type { SysDictItemVo } from '@/api/dict'
+import { useDict } from '@/composables/useDict'
+import { useCrudDialog } from '@/composables/useCrudDialog'
 import { INTERVIEW_RESULT } from '@/constants/enums'
 import { formatDate, formatSalary } from '@/utils/format'
 
@@ -33,22 +33,9 @@ const companyName = ref('')
 const rounds = ref<InterviewRoundVo[]>([])
 const offers = ref<OfferInfoVo[]>([])
 
-const roundDialogVisible = ref(false)
-const editingRoundId = ref<number | null>(null)
-const roundFormRef = ref<FormInstance>()
-const roundSubmitting = ref(false)
-
-// 从数据字典加载面试方式选项
+// 数据字典缓存
+const { loadDict } = useDict()
 const interviewMethodOptions = ref<SysDictItemVo[]>([])
-
-async function fetchDictOptions() {
-  try {
-    const items = await getDictItemsByTypeCode('interview_method')
-    interviewMethodOptions.value = items ?? []
-  } catch {
-    interviewMethodOptions.value = []
-  }
-}
 
 const defaultRoundForm = (): InterviewRoundSaveRequest => ({
   applicationId: applicationId.value,
@@ -58,13 +45,45 @@ const defaultRoundForm = (): InterviewRoundSaveRequest => ({
   result: '待安排',
 })
 
-const roundForm = reactive<InterviewRoundSaveRequest>(defaultRoundForm())
-
 const roundRules: FormRules = {
   roundNo: [{ required: true, message: '请输入轮次', trigger: 'blur' }],
 }
 
-const roundDialogTitle = computed(() => (editingRoundId.value ? '编辑面试轮次' : '新增面试轮次'))
+const {
+  dialogVisible: roundDialogVisible,
+  editingId: editingRoundId,
+  submitting: roundSubmitting,
+  formRef: roundFormRef,
+  form: roundForm,
+  dialogTitle: roundDialogTitle,
+  openCreate: openRoundCreate,
+  openEdit: openRoundEditRaw,
+  doSubmit: doRoundSubmit,
+  doDelete: doRoundDelete,
+} = useCrudDialog<InterviewRoundSaveRequest>({
+  label: '面试轮次',
+  defaultForm: defaultRoundForm,
+  onSaved: loadData,
+})
+
+function openRoundEdit(row: InterviewRoundVo) {
+  openRoundEditRaw(row.id, {
+    applicationId: applicationId.value,
+    roundNo: row.roundNo ?? 1,
+    roundType: row.roundType ?? '',
+    interviewer: row.interviewer ?? '',
+    interviewerTitle: row.interviewerTitle ?? '',
+    interviewMethod: row.interviewMethod ?? '',
+    meetingLink: row.meetingLink ?? '',
+    interviewTime: row.interviewTime?.slice(0, 19) ?? '',
+    durationMinutes: row.durationMinutes,
+    result: row.result ?? '待安排',
+    score: row.score,
+    summary: row.summary ?? '',
+    feedback: row.feedback ?? '',
+    nextRoundTime: row.nextRoundTime?.slice(0, 19) ?? '',
+  } as Partial<InterviewRoundSaveRequest>)
+}
 
 async function loadData() {
   loading.value = true
@@ -86,59 +105,16 @@ async function loadData() {
   }
 }
 
-function openRoundCreate() {
-  editingRoundId.value = null
-  Object.assign(roundForm, defaultRoundForm())
-  roundDialogVisible.value = true
-}
-
-function openRoundEdit(row: InterviewRoundVo) {
-  editingRoundId.value = row.id
-  Object.assign(roundForm, {
-    applicationId: applicationId.value,
-    roundNo: row.roundNo ?? 1,
-    roundType: row.roundType ?? '',
-    interviewer: row.interviewer ?? '',
-    interviewerTitle: row.interviewerTitle ?? '',
-    interviewMethod: row.interviewMethod ?? '',
-    meetingLink: row.meetingLink ?? '',
-    interviewTime: row.interviewTime?.slice(0, 19) ?? '',
-    durationMinutes: row.durationMinutes,
-    result: row.result ?? '待安排',
-    score: row.score,
-    summary: row.summary ?? '',
-    feedback: row.feedback ?? '',
-    nextRoundTime: row.nextRoundTime?.slice(0, 19) ?? '',
-  })
-  roundDialogVisible.value = true
-}
-
 async function handleRoundSubmit() {
-  const valid = await roundFormRef.value?.validate().catch(() => false)
-  if (!valid) return
-
   roundForm.applicationId = applicationId.value
-  roundSubmitting.value = true
-  try {
-    if (editingRoundId.value) {
-      await updateInterviewRound(editingRoundId.value, { ...roundForm })
-      ElMessage.success('更新成功')
-    } else {
-      await createInterviewRound({ ...roundForm })
-      ElMessage.success('创建成功')
-    }
-    roundDialogVisible.value = false
-    loadData()
-  } finally {
-    roundSubmitting.value = false
-  }
+  await doRoundSubmit(
+    () => createInterviewRound({ ...roundForm }),
+    () => updateInterviewRound(editingRoundId.value!, { ...roundForm }),
+  )
 }
 
 async function handleRoundDelete(row: InterviewRoundVo) {
-  await ElMessageBox.confirm('确定删除该面试轮次？', '提示', { type: 'warning' })
-  await deleteInterviewRound(row.id)
-  ElMessage.success('删除成功')
-  loadData()
+  await doRoundDelete(row.id, `第${row.roundNo}轮`, () => deleteInterviewRound(row.id))
 }
 
 function goBack() {
@@ -146,7 +122,7 @@ function goBack() {
 }
 
 onMounted(async () => {
-  await fetchDictOptions()
+  interviewMethodOptions.value = await loadDict('interview_method')
   await loadData()
 })
 </script>
@@ -281,20 +257,6 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-.mb-16 {
-  margin-bottom: 16px;
-}
-
-.ml-8 {
-  margin-left: 8px;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .offer-item {
   padding: 12px 0;
   border-bottom: 1px solid #ebeef5;

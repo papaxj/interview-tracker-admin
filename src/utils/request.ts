@@ -2,19 +2,12 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { getToken, removeToken } from './auth'
 import router from '@/router'
 
-interface RequestInstance {
-  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>
-  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
-  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
-  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>
-}
-
-const instance: AxiosInstance = axios.create({
+const http: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 15000,
 })
 
-instance.interceptors.request.use((config) => {
+http.interceptors.request.use((config) => {
   const token = getToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -22,7 +15,8 @@ instance.interceptors.request.use((config) => {
   return config
 })
 
-instance.interceptors.response.use(
+http.interceptors.response.use(
+  // 响应拦截器直接返回 res.data，因此下方 API 调用返回的是 T 而非 AxiosResponse<T>
   (res) => res.data,
   (err) => {
     const data = err.response?.data as { message?: string } | undefined
@@ -37,6 +31,15 @@ instance.interceptors.response.use(
   },
 )
 
-const request = instance as unknown as RequestInstance
+/**
+ * 请求实例 —— 因响应拦截器解包了 AxiosResponse.data，
+ * 需要断言方法签名让泛型 T 直接对应业务数据类型。
+ */
+const request = http as unknown as {
+  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>
+  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
+  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
+  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>
+}
 
 export default request

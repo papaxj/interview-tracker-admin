@@ -109,21 +109,4 @@ onMounted(fetchList)
   </el-card>
 </template>
 
-<style scoped lang="scss">
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.pagination {
-  margin-top: 16px;
-  justify-content: flex-end;
-}
-</style>

@@ -9,8 +9,8 @@ import {
   updateCompany,
   type CompanySaveRequest,
 } from '@/api/company'
-import { getDictItemsByTypeCode } from '@/api/dict'
 import type { SysDictItemVo } from '@/api/dict'
+import { useDict } from '@/composables/useDict'
 import { useAppStore } from '@/stores/app'
 
 const route = useRoute()
@@ -20,27 +20,11 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
 
-// 从数据字典加载选项
+// 数据字典缓存
+const { loadDict } = useDict()
 const financingStageOptions = ref<SysDictItemVo[]>([])
 const companySizeOptions = ref<SysDictItemVo[]>([])
 const cityOptions = ref<SysDictItemVo[]>([])
-
-async function fetchDictOptions() {
-  try {
-    const [stages, sizes, cities] = await Promise.all([
-      getDictItemsByTypeCode('financing_stage'),
-      getDictItemsByTypeCode('company_size'),
-      getDictItemsByTypeCode('city'),
-    ])
-    financingStageOptions.value = stages ?? []
-    companySizeOptions.value = sizes ?? []
-    cityOptions.value = cities ?? []
-  } catch {
-    financingStageOptions.value = []
-    companySizeOptions.value = []
-    cityOptions.value = []
-  }
-}
 
 const isEdit = computed(() => Boolean(route.params.id))
 const companyId = computed(() => Number(route.params.id))
@@ -113,7 +97,14 @@ function goBack() {
 }
 
 onMounted(async () => {
-  await fetchDictOptions()
+  const [stages, sizes, cities] = await Promise.all([
+    loadDict('financing_stage'),
+    loadDict('company_size'),
+    loadDict('city'),
+  ])
+  financingStageOptions.value = stages
+  companySizeOptions.value = sizes
+  cityOptions.value = cities
   await loadDetail()
 })
 </script>

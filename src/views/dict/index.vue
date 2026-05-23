@@ -451,21 +451,4 @@ onMounted(fetchTypeList)
 .dict-page {
   min-height: calc(100vh - 120px);
 }
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.pagination {
-  margin-top: 16px;
-  justify-content: flex-end;
-}
 </style>

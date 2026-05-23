@@ -1,1 +1,0 @@
-import{i as e}from"./index-BBa1gPRQ.js";function t(t){return e.get(`/companies`,{params:t})}function n(t){return e.get(`/companies/${t}`)}function r(t){return e.post(`/companies`,t)}function i(t,n){return e.put(`/companies/${t}`,n)}function a(t){return e.delete(`/companies/${t}`)}export{i as a,t as i,a as n,n as r,r as t};

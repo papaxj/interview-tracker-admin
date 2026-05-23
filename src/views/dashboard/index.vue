@@ -100,14 +100,6 @@ onMounted(loadStats)
 </template>
 
 <style scoped lang="scss">
-.mb-16 {
-  margin-bottom: 16px;
-}
-
-.mt-16 {
-  margin-top: 16px;
-}
-
 .welcome {
   color: #606266;
   margin: 0;

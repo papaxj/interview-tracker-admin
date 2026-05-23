@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
+import type { FormRules } from 'element-plus'
 import { getJobApplicationList, type JobApplicationVo } from '@/api/application'
 import { getCompanyList, type CompanyVo } from '@/api/company'
 import {
@@ -13,9 +12,10 @@ import {
   type InterviewRoundSaveRequest,
   type InterviewRoundVo,
 } from '@/api/interview'
-import { getDictItemsByTypeCode } from '@/api/dict'
 import type { SysDictItemVo } from '@/api/dict'
 import { usePagination } from '@/composables/usePagination'
+import { useDict } from '@/composables/useDict'
+import { useCrudDialog } from '@/composables/useCrudDialog'
 import { INTERVIEW_RESULT } from '@/constants/enums'
 import { useAppStore } from '@/stores/app'
 import { formatDate } from '@/utils/format'
@@ -25,22 +25,10 @@ const appStore = useAppStore()
 const applications = ref<JobApplicationVo[]>([])
 const companies = ref<CompanyVo[]>([])
 const filterApplicationId = ref<number>()
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
-const formRef = ref<FormInstance>()
-const submitting = ref(false)
 
-// 从数据字典加载面试方式选项
+// 数据字典缓存
+const { loadDict } = useDict()
 const interviewMethodOptions = ref<SysDictItemVo[]>([])
-
-async function fetchDictOptions() {
-  try {
-    const items = await getDictItemsByTypeCode('interview_method')
-    interviewMethodOptions.value = items ?? []
-  } catch {
-    interviewMethodOptions.value = []
-  }
-}
 
 const companyMap = computed(() =>
   Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
@@ -71,14 +59,27 @@ const defaultForm = (): InterviewRoundSaveRequest => ({
   result: '待安排',
 })
 
-const form = reactive<InterviewRoundSaveRequest>(defaultForm())
-
 const rules: FormRules = {
   applicationId: [{ required: true, message: '请选择投递', trigger: 'change' }],
   roundNo: [{ required: true, message: '请输入轮次', trigger: 'blur' }],
 }
 
-const dialogTitle = ref('新增面试')
+const {
+  dialogVisible,
+  editingId,
+  submitting,
+  formRef,
+  form,
+  dialogTitle,
+  openCreate,
+  openEdit,
+  doSubmit,
+  doDelete,
+} = useCrudDialog<InterviewRoundSaveRequest>({
+  label: '面试',
+  defaultForm,
+  onSaved: load,
+})
 
 async function fetchApplications() {
   const [res, companyRes] = await Promise.all([
@@ -89,17 +90,8 @@ async function fetchApplications() {
   companies.value = companyRes.content
 }
 
-function openCreate() {
-  editingId.value = null
-  dialogTitle.value = '新增面试'
-  Object.assign(form, defaultForm())
-  dialogVisible.value = true
-}
-
-function openEdit(row: InterviewRoundVo) {
-  editingId.value = row.id
-  dialogTitle.value = '编辑面试'
-  Object.assign(form, {
+function handleOpenEdit(row: InterviewRoundVo) {
+  openEdit(row.id, {
     applicationId: row.applicationId ?? 0,
     roundNo: row.roundNo ?? 1,
     roundType: row.roundType ?? '',
@@ -114,35 +106,18 @@ function openEdit(row: InterviewRoundVo) {
     summary: row.summary ?? '',
     feedback: row.feedback ?? '',
     nextRoundTime: row.nextRoundTime?.slice(0, 19) ?? '',
-  })
-  dialogVisible.value = true
+  } as Partial<InterviewRoundSaveRequest>)
 }
 
 async function handleSubmit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-
-  submitting.value = true
-  try {
-    if (editingId.value) {
-      await updateInterviewRound(editingId.value, { ...form })
-      ElMessage.success('更新成功')
-    } else {
-      await createInterviewRound({ ...form })
-      ElMessage.success('创建成功')
-    }
-    dialogVisible.value = false
-    load()
-  } finally {
-    submitting.value = false
-  }
+  await doSubmit(
+    () => createInterviewRound({ ...form }),
+    () => updateInterviewRound(editingId.value!, { ...form }),
+  )
 }
 
 async function handleDelete(row: InterviewRoundVo) {
-  await ElMessageBox.confirm('确定删除该面试轮次？', '提示', { type: 'warning' })
-  await deleteInterviewRound(row.id)
-  ElMessage.success('删除成功')
-  load()
+  await doDelete(row.id, `第${row.roundNo}轮面试`, () => deleteInterviewRound(row.id))
 }
 
 function goKanban() {
@@ -150,7 +125,7 @@ function goKanban() {
 }
 
 onMounted(async () => {
-  await fetchDictOptions()
+  interviewMethodOptions.value = await loadDict('interview_method')
   await fetchApplications()
   await load()
 })
@@ -212,7 +187,7 @@ onMounted(async () => {
       <el-table-column prop="score" label="评分" width="70" />
       <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+          <el-button link type="primary" @click="handleOpenEdit(row)">编辑</el-button>
           <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -287,21 +262,4 @@ onMounted(async () => {
   </el-dialog>
 </template>
 
-<style scoped lang="scss">
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.pagination {
-  margin-top: 16px;
-  justify-content: flex-end;
-}
-</style>

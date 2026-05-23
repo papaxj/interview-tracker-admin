@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
+import type { FormRules } from 'element-plus'
 import {
   createJobApplication,
   deleteJobApplication,
@@ -12,9 +11,10 @@ import {
   type JobApplicationVo,
 } from '@/api/application'
 import { getCompanyList, type CompanyVo } from '@/api/company'
-import { getDictItemsByTypeCode } from '@/api/dict'
 import type { SysDictItemVo } from '@/api/dict'
 import { usePagination } from '@/composables/usePagination'
+import { useDict } from '@/composables/useDict'
+import { useCrudDialog } from '@/composables/useCrudDialog'
 import { APPLICATION_STATUS, PRIORITY_LEVEL } from '@/constants/enums'
 import { useAppStore } from '@/stores/app'
 import { formatDate, formatSalary } from '@/utils/format'
@@ -22,30 +22,12 @@ import { formatDate, formatSalary } from '@/utils/format'
 const router = useRouter()
 const appStore = useAppStore()
 const companies = ref<CompanyVo[]>([])
-const dialogVisible = ref(false)
-const editingId = ref<number | null>(null)
-const formRef = ref<FormInstance>()
-const submitting = ref(false)
 const filterCompanyId = ref<number>()
 
-// 从数据字典加载选项
+// 数据字典缓存
+const { loadDict } = useDict()
 const stageOptions = ref<SysDictItemVo[]>([])
 const cityOptions = ref<SysDictItemVo[]>([])
-
-async function fetchDictOptions() {
-  try {
-    const [stages, cities] = await Promise.all([
-      getDictItemsByTypeCode('application_stage'),
-      getDictItemsByTypeCode('city'),
-    ])
-    stageOptions.value = stages ?? []
-    cityOptions.value = cities ?? []
-  } catch {
-    // 接口异常时保持空数组，不影响页面使用
-    stageOptions.value = []
-    cityOptions.value = []
-  }
-}
 
 const companyMap = computed(() =>
   Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
@@ -82,33 +64,35 @@ const defaultForm = (): JobApplicationSaveRequest => ({
   remark: '',
 })
 
-const form = reactive<JobApplicationSaveRequest>(defaultForm())
-
 const rules: FormRules = {
   companyId: [{ required: true, message: '请选择公司', trigger: 'change' }],
   positionName: [{ required: true, message: '请输入岗位名称', trigger: 'blur' }],
 }
 
-const dialogTitle = computed(() => (editingId.value ? '编辑投递' : '新增投递'))
+const {
+  dialogVisible,
+  editingId,
+  submitting,
+  formRef,
+  form,
+  dialogTitle,
+  openCreate,
+  openEdit,
+  doSubmit,
+  doDelete,
+} = useCrudDialog<JobApplicationSaveRequest>({
+  label: '投递',
+  defaultForm,
+  onSaved: load,
+})
 
 async function fetchCompanies() {
   const res = await getCompanyList({ page: 1, size: 100, userId: appStore.currentUserId })
   companies.value = res.content
 }
 
-async function fetchList() {
-  await load()
-}
-
-function openCreate() {
-  editingId.value = null
-  Object.assign(form, defaultForm())
-  dialogVisible.value = true
-}
-
-function openEdit(row: JobApplicationVo) {
-  editingId.value = row.id
-  Object.assign(form, {
+function handleOpenEdit(row: JobApplicationVo) {
+  openEdit(row.id, {
     userId: row.userId ?? appStore.currentUserId,
     companyId: row.companyId ?? 0,
     positionName: row.positionName ?? '',
@@ -127,36 +111,19 @@ function openEdit(row: JobApplicationVo) {
     priorityLevel: row.priorityLevel ?? 2,
     expectedSalary: row.expectedSalary,
     remark: row.remark ?? '',
-  })
-  dialogVisible.value = true
+  } as Partial<JobApplicationSaveRequest>)
 }
 
 async function handleSubmit() {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
-
   form.userId = appStore.currentUserId
-  submitting.value = true
-  try {
-    if (editingId.value) {
-      await updateJobApplication(editingId.value, { ...form })
-      ElMessage.success('更新成功')
-    } else {
-      await createJobApplication({ ...form })
-      ElMessage.success('创建成功')
-    }
-    dialogVisible.value = false
-    fetchList()
-  } finally {
-    submitting.value = false
-  }
+  await doSubmit(
+    () => createJobApplication({ ...form }),
+    () => updateJobApplication(editingId.value!, { ...form }),
+  )
 }
 
 async function handleDelete(row: JobApplicationVo) {
-  await ElMessageBox.confirm(`确定删除投递「${row.positionName}」？`, '提示', { type: 'warning' })
-  await deleteJobApplication(row.id)
-  ElMessage.success('删除成功')
-  fetchList()
+  await doDelete(row.id, row.positionName ?? '', () => deleteJobApplication(row.id))
 }
 
 function goDetail(id: number) {
@@ -164,9 +131,14 @@ function goDetail(id: number) {
 }
 
 onMounted(async () => {
-  await fetchDictOptions()
+  const [stages, cities] = await Promise.all([
+    loadDict('application_stage'),
+    loadDict('city'),
+  ])
+  stageOptions.value = stages
+  cityOptions.value = cities
   await fetchCompanies()
-  await fetchList()
+  await load()
 })
 </script>
 
@@ -231,7 +203,7 @@ onMounted(async () => {
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="goDetail(row.id)">详情</el-button>
-          <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+          <el-button link type="primary" @click="handleOpenEdit(row)">编辑</el-button>
           <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -324,25 +296,4 @@ onMounted(async () => {
   </el-dialog>
 </template>
 
-<style scoped lang="scss">
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.mb-16 {
-  margin-bottom: 16px;
-}
-
-.pagination {
-  margin-top: 16px;
-  justify-content: flex-end;
-}
-</style>
