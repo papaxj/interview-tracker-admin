@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { formatDate } from '@/utils/format'
 import {
   getDictTypeList,
   createDictType,
@@ -224,150 +223,149 @@ onMounted(fetchTypeList)
 
 <template>
   <div class="dict-page">
-    <!-- 字典类型 -->
-    <el-card shadow="never">
-      <template #header>
-        <div class="page-header">
-          <span>字典类型管理</span>
-          <el-button type="primary" @click="openTypeDialog()">新增类型</el-button>
-        </div>
-      </template>
-
-      <div class="toolbar">
-        <el-input
-          v-model="typeKeyword"
-          placeholder="搜索类型名称/编码"
-          clearable
-          style="width: 240px"
-          @input="filterTypeList"
-          @clear="filterTypeList"
-        />
-        <el-button @click="fetchTypeList">查询</el-button>
-      </div>
-
-      <el-table
-        v-loading="typeLoading"
-        :data="typeDisplayList"
-        stripe
-        highlight-current-row
-        @row-click="selectType"
-      >
-        <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="dictName" label="字典名称" min-width="120" />
-        <el-table-column prop="dictCode" label="字典编码" min-width="120" />
-        <el-table-column label="状态" width="80">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-              {{ row.status === 1 ? '正常' : '停用' }}
-            </el-tag>
+    <el-row :gutter="16">
+      <!-- 左侧：字典类型 -->
+      <el-col :span="10">
+        <el-card shadow="never">
+          <template #header>
+            <div class="page-header">
+              <span>字典类型管理</span>
+              <el-button type="primary" size="small" @click="openTypeDialog()">新增</el-button>
+            </div>
           </template>
-        </el-table-column>
-        <el-table-column prop="remark" label="备注" min-width="120" show-overflow-tooltip />
-        <el-table-column label="创建时间" width="160">
-          <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
-        </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click.stop="openTypeDialog(row)">编辑</el-button>
-            <el-button link type="danger" @click.stop="handleDeleteType(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
 
-      <el-pagination
-        v-if="!typeKeyword"
-        class="pagination"
-        background
-        layout="total, sizes, prev, pager, next"
-        :total="typeTotal"
-        :current-page="typePage"
-        :page-size="typeSize"
-        :page-sizes="[10, 20, 50]"
-        @current-change="(p: number) => { handleTypePageChange(p); filterTypeList() }"
-        @size-change="(s: number) => { handleTypeSizeChange(s); filterTypeList() }"
-      />
-    </el-card>
+          <div class="toolbar">
+            <el-input
+              v-model="typeKeyword"
+              placeholder="搜索类型名称/编码"
+              clearable
+              @input="filterTypeList"
+              @clear="filterTypeList"
+            />
+          </div>
 
-    <!-- 字典数据项 -->
-    <el-card shadow="never" style="margin-top: 16px">
-      <template #header>
-        <div class="page-header">
-          <span>
-            字典数据管理
-            <template v-if="selectedTypeCode">
-              — <el-tag type="primary" size="small">{{ selectedTypeCode }}</el-tag>
-            </template>
-          </span>
-          <el-button
-            type="primary"
-            :disabled="!selectedTypeCode"
-            @click="openItemDialog()"
+          <el-table
+            v-loading="typeLoading"
+            :data="typeDisplayList"
+            stripe
+            highlight-current-row
+            :show-overflow-tooltip="true"
+            size="small"
+            @row-click="selectType"
           >
-            新增字典项
-          </el-button>
-        </div>
-      </template>
+            <el-table-column prop="dictName" label="字典名称" min-width="100" show-overflow-tooltip />
+            <el-table-column prop="dictCode" label="编码" min-width="100" show-overflow-tooltip />
+            <el-table-column label="状态" width="65">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+                  {{ row.status === 1 ? '正常' : '停用' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="100" fixed="right">
+              <template #default="{ row }">
+                <el-button link type="primary" size="small" @click.stop="openTypeDialog(row)">编辑</el-button>
+                <el-button link type="danger" size="small" @click.stop="handleDeleteType(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
 
-      <div class="toolbar" v-if="selectedTypeCode">
-        <el-input
-          v-model="itemKeyword"
-          placeholder="搜索标签/值"
-          clearable
-          style="width: 240px"
-          @input="filterItemList"
-          @clear="filterItemList"
-        />
-        <el-button @click="fetchItemList">查询</el-button>
-      </div>
+          <el-pagination
+            v-if="!typeKeyword"
+            class="pagination"
+            small
+            background
+            layout="total, prev, pager, next"
+            :total="typeTotal"
+            :current-page="typePage"
+            :page-size="typeSize"
+            :page-sizes="[10, 20, 50]"
+            @current-change="(p: number) => { handleTypePageChange(p); filterTypeList() }"
+            @size-change="(s: number) => { handleTypeSizeChange(s); filterTypeList() }"
+          />
+        </el-card>
+      </el-col>
 
-      <el-empty v-if="!selectedTypeCode" description="请先在上方点击选择一个字典类型" />
+      <!-- 右侧：字典数据项 -->
+      <el-col :span="14">
+        <el-card shadow="never">
+          <template #header>
+            <div class="page-header">
+              <span>
+                字典数据管理
+                <template v-if="selectedTypeCode">
+                  — <el-tag type="primary" size="small">{{ selectedTypeCode }}</el-tag>
+                </template>
+              </span>
+              <el-button
+                type="primary"
+                size="small"
+                :disabled="!selectedTypeCode"
+                @click="openItemDialog()"
+              >
+                新增
+              </el-button>
+            </div>
+          </template>
 
-      <template v-else>
-        <el-table v-loading="itemLoading" :data="itemDisplayList" stripe>
-          <el-table-column prop="id" label="ID" width="70" />
-          <el-table-column prop="label" label="标签" min-width="100" />
-          <el-table-column prop="value" label="值" min-width="100" />
-          <el-table-column prop="sortOrder" label="排序" width="80" />
-          <el-table-column label="默认" width="80">
-            <template #default="{ row }">
-              <el-tag :type="row.isDefault === 1 ? 'warning' : 'info'" size="small">
-                {{ row.isDefault === 1 ? '是' : '否' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" width="80">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-                {{ row.status === 1 ? '正常' : '停用' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="100" show-overflow-tooltip />
-          <el-table-column label="创建时间" width="160">
-            <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
-          </el-table-column>
-          <el-table-column label="操作" width="150" fixed="right">
-            <template #default="{ row }">
-              <el-button link type="primary" @click="openItemDialog(row)">编辑</el-button>
-              <el-button link type="danger" @click="handleDeleteItem(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+          <template v-if="!selectedTypeCode">
+            <el-empty description="请在左侧点击选择一个字典类型" />
+          </template>
 
-        <el-pagination
-          v-if="!itemKeyword"
-          class="pagination"
-          background
-          layout="total, sizes, prev, pager, next"
-          :total="itemTotal"
-          :current-page="itemPage"
-          :page-size="itemSize"
-          :page-sizes="[10, 20, 50]"
-          @current-change="(p: number) => { handleItemPageChange(p); filterItemList() }"
-          @size-change="(s: number) => { handleItemSizeChange(s); filterItemList() }"
-        />
-      </template>
-    </el-card>
+          <template v-else>
+            <div class="toolbar">
+              <el-input
+                v-model="itemKeyword"
+                placeholder="搜索标签/值"
+                clearable
+                @input="filterItemList"
+                @clear="filterItemList"
+              />
+            </div>
+
+            <el-table v-loading="itemLoading" :data="itemDisplayList" stripe size="small">
+              <el-table-column prop="label" label="标签" min-width="100" show-overflow-tooltip />
+              <el-table-column prop="value" label="值" min-width="100" show-overflow-tooltip />
+              <el-table-column prop="sortOrder" label="排序" width="60" />
+              <el-table-column label="默认" width="55">
+                <template #default="{ row }">
+                  <el-tag :type="row.isDefault === 1 ? 'warning' : 'info'" size="small">
+                    {{ row.isDefault === 1 ? '是' : '否' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="状态" width="65">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+                    {{ row.status === 1 ? '正常' : '停用' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="100" fixed="right">
+                <template #default="{ row }">
+                  <el-button link type="primary" size="small" @click="openItemDialog(row)">编辑</el-button>
+                  <el-button link type="danger" size="small" @click="handleDeleteItem(row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <el-pagination
+              v-if="!itemKeyword"
+              class="pagination"
+              small
+              background
+              layout="total, prev, pager, next"
+              :total="itemTotal"
+              :current-page="itemPage"
+              :page-size="itemSize"
+              :page-sizes="[10, 20, 50]"
+              @current-change="(p: number) => { handleItemPageChange(p); filterItemList() }"
+              @size-change="(s: number) => { handleItemSizeChange(s); filterItemList() }"
+            />
+          </template>
+        </el-card>
+      </el-col>
+    </el-row>
 
     <!-- 类型弹窗 -->
     <el-dialog
@@ -450,6 +448,10 @@ onMounted(fetchTypeList)
 </template>
 
 <style scoped lang="scss">
+.dict-page {
+  min-height: calc(100vh - 120px);
+}
+
 .page-header {
   display: flex;
   align-items: center;
