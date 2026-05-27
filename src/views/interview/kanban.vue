@@ -256,7 +256,7 @@ onMounted(loadData)
 .kanban {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: stretch;
   overflow-x: auto;
   padding-bottom: 16px;
   -webkit-overflow-scrolling: touch;
@@ -304,6 +304,7 @@ onMounted(loadData)
   }
 
   &__body {
+    flex: 1;
     min-height: 80px;
     padding: 8px;
     overflow: visible;
