@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteCompany, getCompanyList, type CompanyVo } from '@/api/company'
@@ -20,18 +20,15 @@ const { loading, list, total, page, size, load, handlePageChange, handleSizeChan
     }),
   )
 
-const displayList = ref<CompanyVo[]>([])
+const displayList = computed(() => {
+  const kw = keyword.value.trim().toLowerCase()
+  return kw
+    ? list.value.filter((item) => item.name?.toLowerCase().includes(kw))
+    : [...list.value]
+})
 
 async function fetchList() {
   await load()
-  filterList()
-}
-
-function filterList() {
-  const kw = keyword.value.trim().toLowerCase()
-  displayList.value = kw
-    ? list.value.filter((item) => item.name?.toLowerCase().includes(kw))
-    : [...list.value]
 }
 
 function goForm(id?: number) {
@@ -63,8 +60,6 @@ onMounted(fetchList)
         placeholder="搜索公司名称"
         clearable
         style="width: 240px"
-        @input="filterList"
-        @clear="filterList"
       />
       <el-button @click="fetchList">查询</el-button>
     </div>
@@ -103,8 +98,8 @@ onMounted(fetchList)
       :current-page="page"
       :page-size="size"
       :page-sizes="[10, 20, 50]"
-      @current-change="(p: number) => { handlePageChange(p); filterList() }"
-      @size-change="(s: number) => { handleSizeChange(s); filterList() }"
+      @current-change="handlePageChange"
+      @size-change="handleSizeChange"
     />
   </el-card>
 </template>

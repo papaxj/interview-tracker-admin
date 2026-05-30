@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   getDictTypeList,
@@ -34,22 +34,19 @@ const {
   getDictTypeList({ page: p, size: s }),
 )
 
-const typeDisplayList = ref<SysDictTypeVo[]>([])
-
-function filterTypeList() {
+const typeDisplayList = computed(() => {
   const kw = typeKeyword.value.trim().toLowerCase()
-  typeDisplayList.value = kw
+  return kw
     ? typeList.value.filter(
         (item) =>
           item.dictName?.toLowerCase().includes(kw) ||
           item.dictCode?.toLowerCase().includes(kw),
       )
     : [...typeList.value]
-}
+})
 
 async function fetchTypeList() {
   await loadTypes()
-  filterTypeList()
 }
 
 // 类型弹窗
@@ -138,27 +135,20 @@ const {
   }),
 )
 
-const itemDisplayList = ref<SysDictItemVo[]>([])
-
-function filterItemList() {
+const itemDisplayList = computed(() => {
   const kw = itemKeyword.value.trim().toLowerCase()
-  itemDisplayList.value = kw
+  return kw
     ? itemList.value.filter(
         (item) =>
           item.label?.toLowerCase().includes(kw) ||
           item.value?.toLowerCase().includes(kw),
       )
     : [...itemList.value]
-}
+})
 
 async function fetchItemList() {
-  if (!selectedTypeCode.value) {
-    itemDisplayList.value = []
-    itemTotal.value = 0
-    return
-  }
+  if (!selectedTypeCode.value) return
   await loadItems()
-  filterItemList()
 }
 
 // 数据项弹窗
@@ -261,8 +251,6 @@ onMounted(fetchTypeList)
               v-model="typeKeyword"
               placeholder="搜索类型名称/编码"
               clearable
-              @input="filterTypeList"
-              @clear="filterTypeList"
             />
           </div>
 
@@ -302,8 +290,8 @@ onMounted(fetchTypeList)
             :current-page="typePage"
             :page-size="typeSize"
             :page-sizes="[10, 20, 50]"
-            @current-change="(p: number) => { handleTypePageChange(p); filterTypeList() }"
-            @size-change="(s: number) => { handleTypeSizeChange(s); filterTypeList() }"
+            @current-change="handleTypePageChange"
+            @size-change="handleTypeSizeChange"
           />
         </el-card>
       </el-col>
@@ -340,8 +328,6 @@ onMounted(fetchTypeList)
                 v-model="itemKeyword"
                 placeholder="搜索标签/值"
                 clearable
-                @input="filterItemList"
-                @clear="filterItemList"
               />
             </div>
 
@@ -381,8 +367,8 @@ onMounted(fetchTypeList)
               :current-page="itemPage"
               :page-size="itemSize"
               :page-sizes="[10, 20, 50]"
-              @current-change="(p: number) => { handleItemPageChange(p); filterItemList() }"
-              @size-change="(s: number) => { handleItemSizeChange(s); filterItemList() }"
+              @current-change="handleItemPageChange"
+              @size-change="handleItemSizeChange"
             />
           </template>
         </el-card>

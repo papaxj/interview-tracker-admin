@@ -189,7 +189,7 @@ onMounted(async () => {
             <el-table-column prop="roundType" label="类型" width="100" />
             <el-table-column prop="interviewMethod" label="面试方式" width="90" />
             <el-table-column prop="interviewer" label="面试官" width="90" />
-            <el-table-column label="面试时间" width="150">
+            <el-table-column label="面试时间" min-width="150">
               <template #default="{ row }">{{ formatDate(row.interviewTime) }}</template>
             </el-table-column>
             <el-table-column prop="result" label="结果" width="90">
