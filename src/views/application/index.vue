@@ -26,7 +26,6 @@ const filterCompanyId = ref<number>()
 
 // 数据字典缓存
 const { loadDict } = useDict()
-const stageOptions = ref<SysDictItemVo[]>([])
 const cityOptions = ref<SysDictItemVo[]>([])
 
 const companyMap = computed(() =>
@@ -57,7 +56,6 @@ const defaultForm = (): JobApplicationSaveRequest => ({
   source: '',
   sourceLink: '',
   applyDate: new Date().toISOString().slice(0, 10),
-  currentStage: stageOptions.value[0]?.label ?? '',
   status: '进行中',
   priorityLevel: 2,
   expectedSalary: undefined,
@@ -106,7 +104,6 @@ function handleOpenEdit(row: JobApplicationVo) {
     source: row.source ?? '',
     sourceLink: row.sourceLink ?? '',
     applyDate: row.applyDate?.slice(0, 10) ?? '',
-    currentStage: row.currentStage ?? '',
     status: row.status ?? '',
     priorityLevel: row.priorityLevel ?? 2,
     expectedSalary: row.expectedSalary,
@@ -131,11 +128,7 @@ function goDetail(id: number) {
 }
 
 onMounted(async () => {
-  const [stages, cities] = await Promise.all([
-    loadDict('application_stage'),
-    loadDict('city'),
-  ])
-  stageOptions.value = stages
+  const cities = await loadDict('city')
   cityOptions.value = cities
   await fetchCompanies()
   await load()
@@ -262,22 +255,11 @@ onMounted(async () => {
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row :gutter="12">
-        <el-col :span="12">
-          <el-form-item label="当前阶段">
-            <el-select v-model="form.currentStage" style="width: 100%">
-              <el-option v-for="s in stageOptions" :key="s.id" :label="s.label" :value="s.label" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="状态">
-            <el-select v-model="form.status" style="width: 100%">
-              <el-option v-for="s in APPLICATION_STATUS" :key="s.value" :label="s.label" :value="s.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
+      <el-form-item label="状态">
+        <el-select v-model="form.status" style="width: 100%">
+          <el-option v-for="s in APPLICATION_STATUS" :key="s.value" :label="s.label" :value="s.value" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="投递日期">
         <el-date-picker v-model="form.applyDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
       </el-form-item>

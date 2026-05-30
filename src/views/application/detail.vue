@@ -33,15 +33,6 @@ const companyName = ref('')
 const rounds = ref<InterviewRoundVo[]>([])
 const offers = ref<OfferInfoVo[]>([])
 
-const currentStage = computed(() => {
-  if (!rounds.value.length) {
-    return 1
-  }
-  const sorted = [...rounds.value].sort((a, b) => (a.roundNo ?? 0) - (b.roundNo ?? 0))
-  const last = sorted[sorted.length - 1]
-  return last.roundNo ?? 1
-})
-
 // 数据字典缓存
 const { loadDict } = useDict()
 const interviewMethodOptions = ref<SysDictItemVo[]>([])
@@ -174,7 +165,6 @@ onMounted(async () => {
             <el-descriptions-item label="薪资">
               {{ formatSalary(application?.salaryMin, application?.salaryMax, application?.salaryMonths) }}
             </el-descriptions-item>
-            <el-descriptions-item label="阶段">{{ currentStage }}</el-descriptions-item>
             <el-descriptions-item label="投递日期">{{ formatDate(application?.applyDate)?.slice(0, 10) }}</el-descriptions-item>
             <el-descriptions-item label="来源">{{ application?.source || '-' }}</el-descriptions-item>
             <el-descriptions-item label="链接">
