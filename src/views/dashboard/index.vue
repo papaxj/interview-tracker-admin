@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCompanyList } from '@/api/company'
 import { getJobApplicationList } from '@/api/application'
-import { getInterviewRoundList } from '@/api/interview'
 import { getOfferList } from '@/api/offer'
 import { useAppStore } from '@/stores/app'
 
@@ -14,7 +13,6 @@ const loading = ref(false)
 const stats = ref({
   companies: 0,
   applications: 0,
-  interviews: 0,
   offers: 0,
 })
 
@@ -22,16 +20,14 @@ async function loadStats() {
   loading.value = true
   const userId = appStore.currentUserId
   try {
-    const [companies, applications, interviews, offers] = await Promise.all([
+    const [companies, applications, offers] = await Promise.all([
       getCompanyList({ page: 1, size: 1, userId }),
       getJobApplicationList({ page: 1, size: 1, userId }),
-      getInterviewRoundList({ page: 1, size: 1 }),
       getOfferList({ page: 1, size: 1 }),
     ])
     stats.value = {
       companies: companies.totalElements,
       applications: applications.totalElements,
-      interviews: interviews.totalElements,
       offers: offers.totalElements,
     }
   } finally {
@@ -42,7 +38,6 @@ async function loadStats() {
 const cards = [
   { key: 'companies', title: '公司', path: '/company', color: '#409eff' },
   { key: 'applications', title: '投递', path: '/application', color: '#67c23a' },
-  { key: 'interviews', title: '面试', path: '/interview', color: '#e6a23c' },
   { key: 'offers', title: 'Offer', path: '/offer', color: '#f56c6c' },
 ] as const
 
@@ -59,7 +54,7 @@ onMounted(loadStats)
     </el-card>
 
     <el-row :gutter="16">
-      <el-col v-for="card in cards" :key="card.key" :span="6">
+      <el-col v-for="card in cards" :key="card.key" :span="8">
         <el-card
           shadow="hover"
           class="stat-card"
@@ -80,7 +75,6 @@ onMounted(loadStats)
           <el-space wrap>
             <el-button @click="router.push('/company/form')">新增公司</el-button>
             <el-button @click="router.push('/application')">管理投递</el-button>
-            <el-button @click="router.push('/interview/kanban')">面试看板</el-button>
             <el-button @click="router.push('/offer')">管理 Offer</el-button>
           </el-space>
         </el-card>
@@ -91,7 +85,6 @@ onMounted(loadStats)
           <ul class="tips">
             <li>顶部可切换当前用户（my_user），业务数据按用户隔离</li>
             <li>建议流程：公司 → 投递 → 面试轮次 → Offer</li>
-            <li>面试看板支持拖拽式状态切换（下拉选择结果）</li>
           </ul>
         </el-card>
       </el-col>
