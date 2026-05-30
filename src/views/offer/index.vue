@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import type { FormRules } from 'element-plus'
 import { getJobApplicationList, type JobApplicationVo } from '@/api/application'
+import { getCompanyList } from '@/api/company'
 import {
   createOffer,
   deleteOffer,
@@ -20,9 +21,17 @@ const appStore = useAppStore()
 const applications = ref<JobApplicationVo[]>([])
 const filterStatus = ref('')
 
-const appMap = computed(() =>
-  Object.fromEntries(applications.value.map((a) => [a.id, a.positionName ?? `#${a.id}`])),
-)
+const appMap = ref<Record<number, string>>({})
+
+const appLabelMap = computed(() => {
+  const map: Record<number, string> = {}
+  for (const a of applications.value) {
+    const position = a.positionName ?? ''
+    const companyName = a.companyId ? appMap.value[a.companyId] : undefined
+    map[a.id] = `${position}${companyName ? ` (${companyName})` : ''}`.trim() || `#${a.id}`
+  }
+  return map
+})
 
 const { loading, list, total, page, size, load, handlePageChange, handleSizeChange } =
   usePagination<OfferInfoVo>((p, s) => {
@@ -58,8 +67,13 @@ const {
 })
 
 async function fetchApplications() {
-  const res = await getJobApplicationList({ page: 1, size: 100, userId: appStore.currentUserId })
-  applications.value = res.content
+  const userId = appStore.currentUserId
+  const [appRes, companyRes] = await Promise.all([
+    getJobApplicationList({ page: 1, size: 100, userId }),
+    getCompanyList({ page: 1, size: 100, userId }),
+  ])
+  applications.value = appRes.content
+  appMap.value = Object.fromEntries(companyRes.content.map((c) => [c.id, c.name]))
 }
 
 function handleOpenEdit(row: OfferInfoVo) {
@@ -114,8 +128,8 @@ onMounted(async () => {
     </div>
 
     <el-table v-loading="loading" :data="list" stripe>
-      <el-table-column label="投递" min-width="120">
-        <template #default="{ row }">{{ appMap[row.applicationId!] ?? row.applicationId }}</template>
+      <el-table-column label="投递" min-width="160">
+        <template #default="{ row }">{{ appLabelMap[row.applicationId!] ?? row.applicationId }}</template>
       </el-table-column>
       <el-table-column label="基础薪资" width="120">
         <template #default="{ row }">{{ formatMoney(row.baseSalary) }}</template>
@@ -165,7 +179,7 @@ onMounted(async () => {
           <el-option
             v-for="app in applications"
             :key="app.id"
-            :label="appMap[app.id]"
+            :label="appLabelMap[app.id]"
             :value="app.id"
           />
         </el-select>
