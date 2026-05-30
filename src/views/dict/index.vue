@@ -111,6 +111,13 @@ function selectType(row: SysDictTypeVo) {
   fetchItemList()
 }
 
+async function toggleTypeStatus(row: SysDictTypeVo) {
+  const newStatus = row.status === 1 ? 0 : 1
+  await updateDictType(row.id, { dictName: row.dictName, dictCode: row.dictCode, status: newStatus, remark: row.remark })
+  row.status = newStatus
+  ElMessage.success(newStatus === 1 ? '已启用' : '已停用')
+}
+
 // ==================== 字典数据项 ====================
 const itemKeyword = ref('')
 
@@ -218,6 +225,21 @@ async function handleDeleteItem(row: SysDictItemVo) {
   fetchItemList()
 }
 
+async function toggleItemStatus(row: SysDictItemVo) {
+  const newStatus = row.status === 1 ? 0 : 1
+  await updateDictItem(row.id, {
+    dictTypeCode: row.dictTypeCode,
+    label: row.label,
+    value: row.value,
+    sortOrder: row.sortOrder,
+    isDefault: row.isDefault,
+    status: newStatus,
+    remark: row.remark,
+  })
+  row.status = newStatus
+  ElMessage.success(newStatus === 1 ? '已启用' : '已停用')
+}
+
 onMounted(fetchTypeList)
 </script>
 
@@ -250,16 +272,17 @@ onMounted(fetchTypeList)
             stripe
             highlight-current-row
             :show-overflow-tooltip="true"
-            size="small"
             @row-click="selectType"
           >
             <el-table-column prop="dictName" label="字典名称" min-width="100" show-overflow-tooltip />
             <el-table-column prop="dictCode" label="编码" min-width="100" show-overflow-tooltip />
-            <el-table-column label="状态" width="65">
+            <el-table-column label="状态" width="70">
               <template #default="{ row }">
-                <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-                  {{ row.status === 1 ? '正常' : '停用' }}
-                </el-tag>
+                <el-switch
+                  :model-value="row.status === 1"
+                  @change="toggleTypeStatus(row)"
+                  @click.stop
+                />
               </template>
             </el-table-column>
             <el-table-column label="操作" width="100" fixed="right">
@@ -273,7 +296,6 @@ onMounted(fetchTypeList)
           <el-pagination
             v-if="!typeKeyword"
             class="pagination"
-            small
             background
             layout="total, prev, pager, next"
             :total="typeTotal"
@@ -323,7 +345,7 @@ onMounted(fetchTypeList)
               />
             </div>
 
-            <el-table v-loading="itemLoading" :data="itemDisplayList" stripe size="small">
+            <el-table v-loading="itemLoading" :data="itemDisplayList" stripe>
               <el-table-column prop="label" label="标签" min-width="100" show-overflow-tooltip />
               <el-table-column prop="value" label="值" min-width="100" show-overflow-tooltip />
               <el-table-column prop="sortOrder" label="排序" width="60" />
@@ -334,17 +356,18 @@ onMounted(fetchTypeList)
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="状态" width="65">
-                <template #default="{ row }">
-                  <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-                    {{ row.status === 1 ? '正常' : '停用' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="100" fixed="right">
-                <template #default="{ row }">
-                  <el-button link type="primary" size="small" @click="openItemDialog(row)">编辑</el-button>
-                  <el-button link type="danger" size="small" @click="handleDeleteItem(row)">删除</el-button>
+            <el-table-column label="状态" width="70">
+              <template #default="{ row }">
+                <el-switch
+                  :model-value="row.status === 1"
+                  @change="toggleItemStatus(row)"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="100" fixed="right">
+              <template #default="{ row }">
+                <el-button link type="primary" size="small" @click="openItemDialog(row)">编辑</el-button>
+                <el-button link type="danger" size="small" @click="handleDeleteItem(row)">删除</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -352,7 +375,6 @@ onMounted(fetchTypeList)
             <el-pagination
               v-if="!itemKeyword"
               class="pagination"
-              small
               background
               layout="total, prev, pager, next"
               :total="itemTotal"

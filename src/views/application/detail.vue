@@ -15,13 +15,13 @@ import {
   type InterviewRoundSaveRequest,
   type InterviewRoundVo,
 } from '@/api/interview'
-import { getOffersByApplication } from '@/api/offer'
+import { getOfferList } from '@/api/offer'
 import type { OfferInfoVo } from '@/api/offer'
 import type { SysDictItemVo } from '@/api/dict'
 import { useDict } from '@/composables/useDict'
 import { useCrudDialog } from '@/composables/useCrudDialog'
 import { INTERVIEW_RESULT } from '@/constants/enums'
-import { formatDate, formatSalary } from '@/utils/format'
+import { formatDate, formatMoney, formatSalary } from '@/utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,6 +33,15 @@ const companyName = ref('')
 const rounds = ref<InterviewRoundVo[]>([])
 const offers = ref<OfferInfoVo[]>([])
 
+const currentStage = computed(() => {
+  if (!rounds.value.length) {
+    return 1
+  }
+  const sorted = [...rounds.value].sort((a, b) => (a.roundNo ?? 0) - (b.roundNo ?? 0))
+  const last = sorted[sorted.length - 1]
+  return last.roundNo ?? 1
+})
+
 // 数据字典缓存
 const { loadDict } = useDict()
 const interviewMethodOptions = ref<SysDictItemVo[]>([])
@@ -40,9 +49,18 @@ const interviewMethodOptions = ref<SysDictItemVo[]>([])
 const defaultRoundForm = (): InterviewRoundSaveRequest => ({
   applicationId: applicationId.value,
   roundNo: rounds.value.length + 1,
-  roundType: '技术面试',
-  interviewMethod: '视频',
+  roundType: '',
+  interviewer: '',
+  interviewerTitle: '',
+  interviewMethod: '',
+  meetingLink: '',
+  interviewTime: '',
+  durationMinutes: undefined,
   result: '待安排',
+  score: undefined,
+  summary: '',
+  feedback: '',
+  nextRoundTime: '',
 })
 
 const roundRules: FormRules = {
@@ -99,7 +117,15 @@ async function loadData() {
       applicationId: applicationId.value,
     })
     rounds.value = roundRes.content
-    offers.value = await getOffersByApplication(applicationId.value)
+    const offerRes = await getOfferList({ page: 1, size: 20, applicationId: applicationId.value })
+    // 兼容分页格式和直接数组
+    if (Array.isArray(offerRes)) {
+      offers.value = offerRes
+    } else if (offerRes && Array.isArray(offerRes.content)) {
+      offers.value = offerRes.content
+    } else {
+      offers.value = []
+    }
   } finally {
     loading.value = false
   }
@@ -148,7 +174,7 @@ onMounted(async () => {
             <el-descriptions-item label="薪资">
               {{ formatSalary(application?.salaryMin, application?.salaryMax, application?.salaryMonths) }}
             </el-descriptions-item>
-            <el-descriptions-item label="阶段">{{ application?.currentStage || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="阶段">{{ currentStage }}</el-descriptions-item>
             <el-descriptions-item label="投递日期">{{ formatDate(application?.applyDate)?.slice(0, 10) }}</el-descriptions-item>
             <el-descriptions-item label="来源">{{ application?.source || '-' }}</el-descriptions-item>
             <el-descriptions-item label="链接">
@@ -171,6 +197,7 @@ onMounted(async () => {
           <el-table :data="rounds" stripe>
             <el-table-column prop="roundNo" label="轮次" width="60" />
             <el-table-column prop="roundType" label="类型" width="100" />
+            <el-table-column prop="interviewMethod" label="面试方式" width="90" />
             <el-table-column prop="interviewer" label="面试官" width="90" />
             <el-table-column label="面试时间" width="150">
               <template #default="{ row }">{{ formatDate(row.interviewTime) }}</template>
@@ -182,7 +209,6 @@ onMounted(async () => {
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="score" label="评分" width="70" />
             <el-table-column label="操作" width="120">
               <template #default="{ row }">
                 <el-button link type="primary" @click="openRoundEdit(row)">编辑</el-button>
@@ -194,14 +220,17 @@ onMounted(async () => {
       </el-col>
 
       <el-col :span="8">
-        <el-card shadow="never">
+        <el-card shadow="never" class="offer-card">
           <template #header>关联 Offer</template>
           <el-empty v-if="!offers.length" description="暂无 Offer" />
           <div v-for="offer in offers" :key="offer.id" class="offer-item">
-            <div class="offer-item__salary">基础薪资：{{ offer.baseSalary ?? '-' }} 元</div>
+            <div class="offer-item__salary">基础薪资：{{ formatMoney(offer.baseSalary) }}</div>
+            <div v-if="offer.bonusSalary">奖金：{{ formatMoney(offer.bonusSalary) }}</div>
+            <div v-if="offer.signBonus">签字费：{{ formatMoney(offer.signBonus) }}</div>
             <div>状态：{{ offer.status || '-' }}</div>
             <div>Offer日期：{{ formatDate(offer.offerDate)?.slice(0, 10) }}</div>
           </div>
+          <div v-if="offers.length" class="pass-stamp" title="已确认 Offer">PASS</div>
         </el-card>
       </el-col>
     </el-row>
@@ -257,6 +286,11 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
+.offer-card {
+  position: relative;
+  overflow: hidden;
+}
+
 .offer-item {
   padding: 12px 0;
   border-bottom: 1px solid #ebeef5;
@@ -270,5 +304,27 @@ onMounted(async () => {
   &__salary {
     font-weight: 600;
   }
+}
+
+.pass-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #c0392b;
+  border: 3px solid #c0392b;
+  border-radius: 50%;
+  opacity: 0.55;
+  letter-spacing: 1px;
+  user-select: none;
+  pointer-events: none;
 }
 </style>

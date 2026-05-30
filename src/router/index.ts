@@ -46,18 +46,6 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '投递详情' },
       },
       {
-        path: 'interview',
-        name: 'Interview',
-        component: () => import('@/views/interview/index.vue'),
-        meta: { title: '面试管理' },
-      },
-      {
-        path: 'interview/kanban',
-        name: 'InterviewKanban',
-        component: () => import('@/views/interview/kanban.vue'),
-        meta: { title: '面试看板' },
-      },
-      {
         path: 'offer',
         name: 'Offer',
         component: () => import('@/views/offer/index.vue'),

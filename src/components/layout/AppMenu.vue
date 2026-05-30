@@ -6,7 +6,6 @@ import {
   DataBoard,
   OfficeBuilding,
   Document,
-  Calendar,
   Trophy,
   Collection,
 } from '@element-plus/icons-vue'
@@ -21,8 +20,6 @@ const menuItems = [
   { path: '/dashboard', title: '仪表盘', icon: DataBoard },
   { path: '/company', title: '公司管理', icon: OfficeBuilding },
   { path: '/application', title: '投递记录', icon: Document },
-  { path: '/interview', title: '面试管理', icon: Calendar },
-  { path: '/interview/kanban', title: '面试看板', icon: Calendar },
   { path: '/offer', title: 'Offer', icon: Trophy },
   { path: '/dict', title: '数据字典', icon: Collection },
 ]

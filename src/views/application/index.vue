@@ -186,7 +186,6 @@ onMounted(async () => {
           {{ formatSalary(row.salaryMin, row.salaryMax, row.salaryMonths) }}
         </template>
       </el-table-column>
-      <el-table-column prop="currentStage" label="阶段" width="90" />
       <el-table-column prop="status" label="状态" width="90">
         <template #default="{ row }">
           <el-tag size="small">{{ row.status }}</el-tag>
