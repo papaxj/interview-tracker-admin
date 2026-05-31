@@ -152,11 +152,11 @@ onMounted(async () => {
         placeholder="筛选公司"
         clearable
         style="width: 180px"
-        @change="fetchList"
+        @change="() => { page.value = 1; load() }"
       >
         <el-option v-for="c in companies" :key="c.id" :label="c.name" :value="c.id" />
       </el-select>
-      <el-button @click="fetchList">刷新</el-button>
+      <el-button @click="load">刷新</el-button>
     </div>
 
     <el-alert

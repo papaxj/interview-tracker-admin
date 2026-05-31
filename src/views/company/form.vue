@@ -105,6 +105,12 @@ onMounted(async () => {
   financingStageOptions.value = stages
   companySizeOptions.value = sizes
   cityOptions.value = cities
+  // 新增时默认选中 isDefault=1 的项
+  if (!isEdit.value) {
+    form.city = cities.find((i) => i.isDefault === 1)?.label ?? ''
+    form.companySize = sizes.find((i) => i.isDefault === 1)?.label ?? ''
+    form.financingStage = stages.find((i) => i.isDefault === 1)?.label ?? ''
+  }
   await loadDetail()
 })
 </script>

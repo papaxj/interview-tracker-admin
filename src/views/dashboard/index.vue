@@ -84,7 +84,7 @@ onMounted(loadStats)
           <template #header>使用提示</template>
           <ul class="tips">
             <li>顶部可切换当前用户（my_user），业务数据按用户隔离</li>
-            <li>建议流程：公司 → 投递 → 面试轮次 → Offer</li>
+            <li>建议流程：公司 → 投递 → Offer</li>
           </ul>
         </el-card>
       </el-col>
