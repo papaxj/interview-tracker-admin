@@ -18,12 +18,11 @@ import AppMain from '@/components/layout/AppMain.vue'
 .app-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
 
   &__body {
     display: flex;
     flex: 1;
-    overflow: hidden;
   }
 }
 </style>

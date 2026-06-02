@@ -119,7 +119,7 @@ onMounted(async () => {
   <el-card v-loading="loading" shadow="never">
     <template #header>{{ isEdit ? '编辑公司' : '新增公司' }}</template>
 
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 720px">
+    <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <el-row :gutter="16">
         <el-col :span="12">
           <el-form-item label="公司名称" prop="name">
