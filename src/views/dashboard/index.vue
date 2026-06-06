@@ -270,9 +270,13 @@ const quickItems = [
   { label: '数据字典', icon: DataBoard, path: '/dict', color: '#8b5cf6' },
 ]
 
+let initialized = false
+
 // ---- 生命周期 ----
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  // 确保用户列表先加载完成，再拉取仪表盘数据
+  await appStore.loadMyUsers()
+  await loadData()
   window.addEventListener('resize', resizeCharts)
 })
 
@@ -285,7 +289,12 @@ onUnmounted(() => {
 })
 
 // 用户切换时重新加载
-watch(() => appStore.currentUserId, loadData)
+watch(
+  () => appStore.currentUserId,
+  () => { if (initialized) loadData() },
+)
+
+onMounted(() => { initialized = true })
 </script>
 
 <template>
