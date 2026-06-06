@@ -47,13 +47,19 @@ async function handleSubmit() {
 
 <template>
   <div class="login-page">
-    <el-card class="login-card" shadow="always">
-      <template #header>
-        <h2 class="login-title">面试追踪管理后台</h2>
-      </template>
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="login-brand__logo">AT</span>
+        <h1 class="login-brand__title">面试追踪</h1>
+        <p class="login-brand__sub">智能面试流程管理平台</p>
+      </div>
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="login-form">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="系统用户名或业务用户名，如：张三" />
+          <el-input
+            v-model="form.username"
+            placeholder="系统用户名或业务用户名"
+            size="large"
+          />
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input
@@ -61,37 +67,88 @@ async function handleSubmit() {
             type="password"
             show-password
             placeholder="请输入密码"
+            size="large"
             @keyup.enter="handleSubmit"
           />
         </el-form-item>
-        <el-button type="primary" :loading="loading" class="login-btn" @click="handleSubmit">
+        <el-button
+          type="primary"
+          :loading="loading"
+          class="login-btn"
+          size="large"
+          @click="handleSubmit"
+        >
           登录
         </el-button>
       </el-form>
-    </el-card>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+@use '@/styles/variables.scss' as *;
+
 .login-page {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f5f6fa;
 }
 
 .login-card {
   width: 400px;
+  padding: 44px 40px;
+  background: #fff;
+  border: 1px solid $border-color;
+  border-radius: 10px;
 }
 
-.login-title {
-  margin: 0;
+.login-brand {
   text-align: center;
-  font-size: 20px;
+  margin-bottom: 36px;
+
+  &__logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: $primary-color;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 700;
+    color: $text-color;
+    margin: 0 0 4px;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: $text-secondary;
+    margin: 0;
+  }
+}
+
+.login-form {
+  :deep(.el-form-item__label) {
+    font-weight: 500;
+  }
 }
 
 .login-btn {
   width: 100%;
+  height: 42px;
+  margin-top: 4px;
+  border-radius: $radius;
+  font-weight: 600;
+  font-size: 14px;
 }
 </style>

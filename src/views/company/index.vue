@@ -59,9 +59,9 @@ onMounted(fetchList)
         v-model="keyword"
         placeholder="搜索公司名称"
         clearable
-        style="width: 240px"
+        prefix-icon="Search"
+        style="width: 260px"
       />
-      <el-button @click="fetchList">查询</el-button>
     </div>
 
     <el-table v-loading="loading" :data="displayList" stripe>

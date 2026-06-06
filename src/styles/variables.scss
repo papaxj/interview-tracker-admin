@@ -1,6 +1,16 @@
-$primary-color: #409eff;
+// 简洁饱满配色
+$primary-color: #4f6ef7;
+$primary-light: #f0f3ff;
+$primary-hover: #3b54e0;
+$sidebar-bg: #111827;
 $sidebar-width: 220px;
 $sidebar-collapsed-width: 64px;
-$header-height: 56px;
-$bg-color: #f5f7fa;
-$text-color: #303133;
+$header-height: 52px;
+$bg-color: #f5f6fa;
+$card-bg: #ffffff;
+$text-color: #1f2937;
+$text-secondary: #6b7280;
+$border-color: #e5e7eb;
+$radius: 6px;
+$shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+$transition: 0.15s ease;

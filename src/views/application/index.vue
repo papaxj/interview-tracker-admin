@@ -152,7 +152,7 @@ onMounted(async () => {
         placeholder="筛选公司"
         clearable
         style="width: 180px"
-        @change="() => { page.value = 1; load() }"
+        @change="() => { page = 1; load() }"
       >
         <el-option v-for="c in companies" :key="c.id" :label="c.name" :value="c.id" />
       </el-select>

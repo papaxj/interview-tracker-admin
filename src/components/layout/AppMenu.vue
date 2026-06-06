@@ -31,23 +31,19 @@ function navigate(path: string) {
 
 <template>
   <aside class="app-menu" :class="{ 'app-menu--collapsed': appStore.collapsed }">
-    <el-menu
-      :default-active="activeMenu"
-      :collapse="appStore.collapsed"
-      background-color="#001529"
-      text-color="#ffffffa6"
-      active-text-color="#fff"
-    >
-      <el-menu-item
+    <nav class="app-menu__nav">
+      <div
         v-for="item in menuItems"
         :key="item.path"
-        :index="item.path"
+        class="app-menu__item"
+        :class="{ 'is-active': activeMenu === item.path || activeMenu.startsWith(item.path + '/') }"
         @click="navigate(item.path)"
+        :title="appStore.collapsed ? item.title : ''"
       >
-        <el-icon><component :is="item.icon" /></el-icon>
-        <template #title>{{ item.title }}</template>
-      </el-menu-item>
-    </el-menu>
+        <el-icon :size="18"><component :is="item.icon" /></el-icon>
+        <span v-if="!appStore.collapsed" class="app-menu__text">{{ item.title }}</span>
+      </div>
+    </nav>
   </aside>
 </template>
 
@@ -57,16 +53,52 @@ function navigate(path: string) {
 .app-menu {
   width: $sidebar-width;
   flex-shrink: 0;
-  background: #001529;
-  transition: width 0.2s;
+  background: $sidebar-bg;
+  transition: width $transition;
+  overflow: hidden;
 
   &--collapsed {
     width: $sidebar-collapsed-width;
   }
 
-  .el-menu {
-    border-right: none;
-    height: 100%;
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 10px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all $transition;
+    user-select: none;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    &.is-active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+  }
+
+  &--collapsed &__item {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  &__text {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
   }
 }
 </style>

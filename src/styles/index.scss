@@ -12,22 +12,102 @@ html,
 body,
 #app {
   height: 100%;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: $text-color;
   background: $bg-color;
+  -webkit-font-smoothing: antialiased;
 }
 
-// ---------- 公共布局样式 ----------
+// ---------- 卡片 ----------
+.el-card {
+  border-radius: $radius !important;
+  border: 1px solid $border-color !important;
+  box-shadow: none !important;
+
+  .el-card__header {
+    padding: 14px 20px;
+    border-bottom: 1px solid $border-color;
+    font-weight: 600;
+    font-size: 15px;
+    color: $text-color;
+  }
+
+  .el-card__body {
+    padding: 20px;
+  }
+}
+
+// ---------- 表格 ----------
+.el-table {
+  --el-table-border-color: #{$border-color};
+  --el-table-header-bg-color: #f9fafb;
+  border-radius: $radius;
+
+  th.el-table__cell {
+    font-weight: 600;
+    font-size: 12px;
+    color: $text-secondary;
+  }
+
+  .el-table__row:hover > td.el-table__cell {
+    background-color: #f8f9fd;
+  }
+}
+
+// ---------- 按钮 ----------
+.el-button--primary {
+  --el-button-bg-color: #{$primary-color};
+  --el-button-border-color: #{$primary-color};
+  --el-button-hover-bg-color: #{$primary-hover};
+  --el-button-hover-border-color: #{$primary-hover};
+  border-radius: $radius;
+  font-weight: 500;
+}
+
+.el-button {
+  border-radius: $radius;
+  font-weight: 500;
+}
+
+// ---------- 标签 ----------
+.el-tag {
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+// ---------- 分页 ----------
+.el-pagination {
+  .el-pager li.is-active {
+    background-color: $primary-color;
+    border-radius: $radius;
+  }
+}
+
+// ---------- 输入框 ----------
+.el-input__wrapper,
+.el-select .el-input__wrapper,
+.el-date-editor .el-input__wrapper {
+  border-radius: $radius;
+}
+
+// ---------- 公共布局 ----------
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  > span:first-child {
+    font-size: 15px;
+    font-weight: 600;
+  }
 }
 
 .toolbar {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .pagination {
@@ -35,15 +115,14 @@ body,
   justify-content: flex-end;
 }
 
-// ---------- 公共间距工具类 ----------
-.mb-16 {
-  margin-bottom: 16px;
-}
+.mb-16 { margin-bottom: 16px; }
+.ml-8 { margin-left: 8px; }
+.mt-16 { margin-top: 16px; }
 
-.ml-8 {
-  margin-left: 8px;
-}
-
-.mt-16 {
-  margin-top: 16px;
+// ---------- 滚动条 ----------
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
 }

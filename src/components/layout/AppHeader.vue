@@ -30,12 +30,13 @@ function handleLogout() {
         text
         @click="appStore.toggleSidebar()"
       />
-      <span class="app-header__title">面试追踪管理后台</span>
+      <span class="app-header__logo">AT</span>
+      <span class="app-header__title">面试追踪</span>
     </div>
     <div class="app-header__right">
-      <span class="app-header__label">当前用户</span>
+      <span class="app-header__label">用户</span>
       <UserSelect />
-      <el-button type="danger" text @click="handleLogout">退出登录</el-button>
+      <el-button text class="app-header__logout" @click="handleLogout">退出</el-button>
     </div>
   </header>
 </template>
@@ -48,9 +49,9 @@ function handleLogout() {
   align-items: center;
   justify-content: space-between;
   height: $header-height;
-  padding: 0 16px;
+  padding: 0 20px;
   background: #fff;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid $border-color;
 
   &__left {
     display: flex;
@@ -58,20 +59,40 @@ function handleLogout() {
     gap: 8px;
   }
 
+  &__logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: $primary-color;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
   &__title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
+    color: $text-color;
   }
 
   &__right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
 
   &__label {
+    font-size: 12px;
+    color: $text-secondary;
+  }
+
+  &__logout {
     font-size: 13px;
-    color: #909399;
+    color: $text-secondary;
   }
 }
 </style>

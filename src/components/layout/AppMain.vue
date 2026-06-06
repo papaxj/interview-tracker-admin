@@ -9,9 +9,12 @@ import { RouterView } from 'vue-router'
 </template>
 
 <style scoped lang="scss">
+@use '@/styles/variables.scss' as *;
+
 .app-main {
   flex: 1;
-  padding: 16px;
   overflow: auto;
+  background: $bg-color;
+  padding: 20px;
 }
 </style>

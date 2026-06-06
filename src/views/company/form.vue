@@ -120,59 +120,49 @@ onMounted(async () => {
     <template #header>{{ isEdit ? '编辑公司' : '新增公司' }}</template>
 
     <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-      <el-row :gutter="16">
-        <el-col :span="12">
+      <el-row :gutter="20">
+        <el-col :span="8">
           <el-form-item label="公司名称" prop="name">
             <el-input v-model="form.name" placeholder="请输入公司名称" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="行业">
             <el-input v-model="form.industry" placeholder="如：互联网" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="城市">
             <el-select v-model="form.city" placeholder="请选择" style="width: 100%" clearable>
               <el-option v-for="s in cityOptions" :key="s.id" :label="s.label" :value="s.label" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="公司规模">
             <el-select v-model="form.companySize" placeholder="请选择" style="width: 100%" clearable>
               <el-option v-for="s in companySizeOptions" :key="s.id" :label="s.label" :value="s.label" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="融资阶段">
             <el-select v-model="form.financingStage" placeholder="请选择" style="width: 100%" clearable>
               <el-option v-for="s in financingStageOptions" :key="s.id" :label="s.label" :value="s.label" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="官网">
             <el-input v-model="form.website" placeholder="https://" />
           </el-form-item>
         </el-col>
-        <el-col :span="24">
+        <el-col :span="16">
           <el-form-item label="地址">
             <el-input v-model="form.address" placeholder="公司地址" />
           </el-form-item>
         </el-col>
-        <el-col :span="12">
-          <el-form-item label="HR姓名">
-            <el-input v-model="form.hrName" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="HR联系方式">
-            <el-input v-model="form.hrContact" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="状态">
             <el-radio-group v-model="form.status">
               <el-radio :value="1">正常</el-radio>
@@ -180,9 +170,19 @@ onMounted(async () => {
             </el-radio-group>
           </el-form-item>
         </el-col>
+        <el-col :span="8">
+          <el-form-item label="HR姓名">
+            <el-input v-model="form.hrName" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="HR联系方式">
+            <el-input v-model="form.hrContact" />
+          </el-form-item>
+        </el-col>
         <el-col :span="24">
           <el-form-item label="备注">
-            <el-input v-model="form.remark" type="textarea" :rows="3" />
+            <el-input v-model="form.remark" type="textarea" :rows="2" />
           </el-form-item>
         </el-col>
       </el-row>
