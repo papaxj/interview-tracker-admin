@@ -1,1 +1,0 @@
-import{o as e}from"./dict-X2HN3ZjY.js";var t=new Map;function n(){async function n(n){if(t.has(n))return t.get(n);try{let r=await e(n)??[];return t.set(n,r),r}catch{return[]}}return{loadDict:n}}export{n as t};

@@ -38,28 +38,58 @@ let statusChart: echarts.ECharts | null = null
 let companyChart: echarts.ECharts | null = null
 let cityChart: echarts.ECharts | null = null
 
+let initDone = false
+
 // ---- 加载数据 ----
 async function loadData() {
   loading.value = true
   const userId = appStore.currentUserId
-  try {
-    const [cRes, aRes, oRes] = await Promise.all([
-      getCompanyList({ page: 1, size: 200, userId }),
-      getJobApplicationList({ page: 1, size: 1000, userId }),
-      getOfferList({ page: 1, size: 1 }),
-    ])
+  console.log('[Dashboard] loading data for userId:', userId)
+
+  // 独立调用，单个失败不影响其他
+  const settled = await Promise.allSettled([
+    getCompanyList({ page: 1, size: 200, userId }),
+    getJobApplicationList({ page: 1, size: 1000, userId }),
+    getOfferList({ page: 1, size: 1 }),
+  ])
+
+  let totalCompanies = 0
+  let totalApps = 0
+  let totalOffers = 0
+
+  if (settled[0].status === 'fulfilled') {
+    const cRes = settled[0].value
     companies.value = cRes.content
-    allApps.value = aRes.content
-    stats.value = {
-      companies: cRes.totalElements,
-      applications: aRes.totalElements,
-      offers: oRes.totalElements,
-    }
-  } finally {
-    loading.value = false
-    await nextTick()
-    renderCharts()
+    totalCompanies = cRes.totalElements
+  } else {
+    console.error('[Dashboard] 公司列表加载失败:', settled[0].reason)
   }
+
+  if (settled[1].status === 'fulfilled') {
+    const aRes = settled[1].value
+    allApps.value = aRes.content
+    totalApps = aRes.totalElements
+  } else {
+    console.error('[Dashboard] 投递列表加载失败:', settled[1].reason)
+  }
+
+  if (settled[2].status === 'fulfilled') {
+    totalOffers = settled[2].value.totalElements
+  } else {
+    console.error('[Dashboard] Offer列表加载失败:', settled[2].reason)
+  }
+
+  stats.value = {
+    companies: totalCompanies,
+    applications: totalApps,
+    offers: totalOffers,
+  }
+
+  console.log('[Dashboard] stats:', stats.value, 'apps:', allApps.value.length, 'companies:', companies.value.length)
+
+  loading.value = false
+  await nextTick()
+  renderCharts()
 }
 
 // ---- 月度趋势折线图 ----
@@ -270,13 +300,15 @@ const quickItems = [
   { label: '数据字典', icon: DataBoard, path: '/dict', color: '#8b5cf6' },
 ]
 
-let initialized = false
-
-// ---- 生命周期 ----
+// ---- 生命周期：先等用户列表就绪，再加载仪表盘数据 ----
 onMounted(async () => {
-  // 确保用户列表先加载完成，再拉取仪表盘数据
-  await appStore.loadMyUsers()
+  try {
+    await appStore.loadMyUsers()
+  } catch (e) {
+    console.error('[Dashboard] loadMyUsers 失败:', e)
+  }
   await loadData()
+  initDone = true
   window.addEventListener('resize', resizeCharts)
 })
 
@@ -288,20 +320,17 @@ onUnmounted(() => {
   cityChart?.dispose()
 })
 
-// 用户切换时重新加载
-watch(
-  () => appStore.currentUserId,
-  () => { if (initialized) loadData() },
-)
-
-onMounted(() => { initialized = true })
+// 用户切换时重新加载（首次初始化不触发）
+watch(() => appStore.currentUserId, () => {
+  if (initDone) loadData()
+})
 </script>
 
 <template>
   <div v-loading="loading" class="dashboard">
     <!-- 统计卡片 -->
     <div class="stat-row">
-      <div class="stat-card">
+      <div class="stat-card clickable" @click="router.push('/company')">
         <div class="stat-card__icon" style="color: #4f6ef7; background: rgba(79,110,247,0.08)">
           <el-icon :size="20"><OfficeBuilding /></el-icon>
         </div>
@@ -310,7 +339,7 @@ onMounted(() => { initialized = true })
           <span class="stat-card__label">公司总数</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" @click="router.push('/application')">
         <div class="stat-card__icon" style="color: #10b981; background: rgba(16,185,129,0.08)">
           <el-icon :size="20"><Document /></el-icon>
         </div>
@@ -319,7 +348,7 @@ onMounted(() => { initialized = true })
           <span class="stat-card__label">投递记录</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" @click="router.push('/offer')">
         <div class="stat-card__icon" style="color: #f59e0b; background: rgba(245,158,11,0.08)">
           <el-icon :size="20"><Trophy /></el-icon>
         </div>
@@ -332,11 +361,11 @@ onMounted(() => { initialized = true })
 
     <!-- 图表区 第一行 -->
     <div class="chart-row">
-      <el-card shadow="never" class="chart-card chart-card--wide">
+      <el-card shadow="never" class="chart-card chart-card--wide clickable" @click="router.push('/application')">
         <template #header><span class="chart-title">月度投递趋势</span></template>
         <div ref="trendChartRef" class="chart-box"></div>
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card--narrow">
+      <el-card shadow="never" class="chart-card chart-card--narrow clickable" @click="router.push('/application')">
         <template #header><span class="chart-title">状态分布</span></template>
         <div ref="statusChartRef" class="chart-box"></div>
       </el-card>
@@ -344,11 +373,11 @@ onMounted(() => { initialized = true })
 
     <!-- 图表区 第二行 -->
     <div class="chart-row">
-      <el-card shadow="never" class="chart-card chart-card--wide">
+      <el-card shadow="never" class="chart-card chart-card--wide clickable" @click="router.push('/company')">
         <template #header><span class="chart-title">投递公司 Top 10</span></template>
         <div ref="companyChartRef" class="chart-box"></div>
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card--narrow">
+      <el-card shadow="never" class="chart-card chart-card--narrow clickable" @click="router.push('/application')">
         <template #header><span class="chart-title">城市分布</span></template>
         <div ref="cityChartRef" class="chart-box"></div>
       </el-card>
@@ -375,10 +404,8 @@ onMounted(() => { initialized = true })
 @use '@/styles/variables.scss' as *;
 
 .dashboard {
-  // 无 max-width，内容自然撑满
 }
 
-// 统计卡片
 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -394,6 +421,16 @@ onMounted(() => { initialized = true })
   background: $card-bg;
   border: 1px solid $border-color;
   border-radius: $radius;
+
+  &.clickable {
+    cursor: pointer;
+    transition: all $transition;
+
+    &:hover {
+      border-color: $primary-color;
+      box-shadow: 0 2px 8px rgba(79,110,247,0.1);
+    }
+  }
 
   &__icon {
     display: flex;
@@ -424,7 +461,6 @@ onMounted(() => { initialized = true })
   }
 }
 
-// 图表区域
 .chart-row {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -433,14 +469,21 @@ onMounted(() => { initialized = true })
 }
 
 .chart-card {
-  &--wide { /* flex: 1.5 */ }
-  &--narrow { /* flex: 1 */ }
-
   :deep(.el-card__header) {
     padding: 14px 20px;
   }
   :deep(.el-card__body) {
     padding: 8px 16px 16px;
+  }
+
+  &.clickable {
+    cursor: pointer;
+    transition: all $transition;
+
+    &:hover {
+      border-color: $primary-color;
+      box-shadow: 0 2px 12px rgba(79,110,247,0.08);
+    }
   }
 }
 
@@ -454,7 +497,6 @@ onMounted(() => { initialized = true })
   height: 260px;
 }
 
-// 快捷入口
 .quick-row {
   display: flex;
   gap: 10px;
