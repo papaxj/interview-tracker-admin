@@ -361,11 +361,11 @@ watch(() => appStore.currentUserId, () => {
 
     <!-- 图表区 第一行 -->
     <div class="chart-row">
-      <el-card shadow="never" class="chart-card chart-card--wide clickable" @click="router.push('/application')">
+      <el-card shadow="never" class="chart-card chart-card--wide">
         <template #header><span class="chart-title">月度投递趋势</span></template>
         <div ref="trendChartRef" class="chart-box"></div>
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card--narrow clickable" @click="router.push('/application')">
+      <el-card shadow="never" class="chart-card chart-card--narrow">
         <template #header><span class="chart-title">状态分布</span></template>
         <div ref="statusChartRef" class="chart-box"></div>
       </el-card>
@@ -373,11 +373,11 @@ watch(() => appStore.currentUserId, () => {
 
     <!-- 图表区 第二行 -->
     <div class="chart-row">
-      <el-card shadow="never" class="chart-card chart-card--wide clickable" @click="router.push('/company')">
+      <el-card shadow="never" class="chart-card chart-card--wide">
         <template #header><span class="chart-title">投递公司 Top 10</span></template>
         <div ref="companyChartRef" class="chart-box"></div>
       </el-card>
-      <el-card shadow="never" class="chart-card chart-card--narrow clickable" @click="router.push('/application')">
+      <el-card shadow="never" class="chart-card chart-card--narrow">
         <template #header><span class="chart-title">城市分布</span></template>
         <div ref="cityChartRef" class="chart-box"></div>
       </el-card>
@@ -474,16 +474,6 @@ watch(() => appStore.currentUserId, () => {
   }
   :deep(.el-card__body) {
     padding: 8px 16px 16px;
-  }
-
-  &.clickable {
-    cursor: pointer;
-    transition: all $transition;
-
-    &:hover {
-      border-color: $primary-color;
-      box-shadow: 0 2px 12px rgba(79,110,247,0.08);
-    }
   }
 }
 
