@@ -188,23 +188,22 @@ function renderStatusChart() {
   })
 }
 
-// ---- 公司投递Top柱状图 ----
+// ---- 公司行业分布柱状图 ----
 function renderCompanyChart() {
   if (!companyChartRef.value) return
   if (!companyChart) companyChart = echarts.init(companyChartRef.value)
   const count: Record<string, number> = {}
-  for (const app of allApps.value) {
-    if (app.companyId != null) {
-      const name = companyMap.value[app.companyId] ?? `ID-${app.companyId}`
-      count[name] = (count[name] || 0) + 1
-    }
+  for (const c of companies.value) {
+    const ind = c.industry || '未分类'
+    count[ind] = (count[ind] || 0) + 1
   }
+  // 按数量降序，取前8
   const sorted = Object.entries(count)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
+    .slice(0, 8)
   companyChart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: 8, right: 16, top: 12, bottom: 8, containLabel: true },
+    grid: { left: 10, right: 16, top: 12, bottom: 8, containLabel: true },
     xAxis: {
       type: 'value',
       minInterval: 1,
@@ -374,7 +373,7 @@ watch(() => appStore.currentUserId, () => {
     <!-- 图表区 第二行 -->
     <div class="chart-row">
       <el-card shadow="never" class="chart-card chart-card--wide">
-        <template #header><span class="chart-title">投递公司 Top 10</span></template>
+        <template #header><span class="chart-title">公司行业分布</span></template>
         <div ref="companyChartRef" class="chart-box"></div>
       </el-card>
       <el-card shadow="never" class="chart-card chart-card--narrow">
