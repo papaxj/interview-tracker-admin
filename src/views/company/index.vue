@@ -64,6 +64,7 @@ onMounted(fetchList)
         @keyup.enter="handleSearch"
         @clear="handleSearch"
       />
+      <el-button @click="fetchList">刷新</el-button>
     </div>
 
     <el-table v-loading="loading" :data="list" stripe>
