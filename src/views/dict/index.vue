@@ -132,23 +132,19 @@ const {
     page: p,
     size: s,
     dictTypeCode: selectedTypeCode.value || undefined,
+    keyword: itemKeyword.value || undefined,
   }),
 )
 
-const itemDisplayList = computed(() => {
-  const kw = itemKeyword.value.trim().toLowerCase()
-  return kw
-    ? itemList.value.filter(
-        (item) =>
-          item.label?.toLowerCase().includes(kw) ||
-          item.value?.toLowerCase().includes(kw),
-      )
-    : [...itemList.value]
-})
-
 async function fetchItemList() {
   if (!selectedTypeCode.value) return
+  // 搜索时重置到第一页
+  if (itemPage.value !== 1) itemPage.value = 1
   await loadItems()
+}
+
+function handleItemSearch() {
+  fetchItemList()
 }
 
 // 数据项弹窗
@@ -328,10 +324,12 @@ onMounted(fetchTypeList)
                 v-model="itemKeyword"
                 placeholder="搜索标签/值"
                 clearable
+                @keyup.enter="handleItemSearch"
+                @clear="handleItemSearch"
               />
             </div>
 
-            <el-table v-loading="itemLoading" :data="itemDisplayList" stripe>
+            <el-table v-loading="itemLoading" :data="itemList" stripe>
               <el-table-column prop="label" label="标签" min-width="100" show-overflow-tooltip />
               <el-table-column prop="value" label="值" min-width="100" show-overflow-tooltip />
               <el-table-column prop="sortOrder" label="排序" width="60" />
@@ -359,7 +357,6 @@ onMounted(fetchTypeList)
             </el-table>
 
             <el-pagination
-              v-if="!itemKeyword"
               class="pagination"
               background
               layout="total, prev, pager, next"
