@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteCompany, getCompanyList, type CompanyVo } from '@/api/company'
@@ -17,18 +17,18 @@ const { loading, list, total, page, size, load, handlePageChange, handleSizeChan
       page: p,
       size: s,
       userId: appStore.currentUserId,
+      name: keyword.value || undefined,
     }),
   )
 
-const displayList = computed(() => {
-  const kw = keyword.value.trim().toLowerCase()
-  return kw
-    ? list.value.filter((item) => item.name?.toLowerCase().includes(kw))
-    : [...list.value]
-})
-
 async function fetchList() {
+  // 搜索时重置到第一页
+  if (page.value !== 1) page.value = 1
   await load()
+}
+
+function handleSearch() {
+  fetchList()
 }
 
 function goForm(id?: number) {
@@ -61,10 +61,12 @@ onMounted(fetchList)
         clearable
         prefix-icon="Search"
         style="width: 260px"
+        @keyup.enter="handleSearch"
+        @clear="handleSearch"
       />
     </div>
 
-    <el-table v-loading="loading" :data="displayList" stripe>
+    <el-table v-loading="loading" :data="list" stripe>
       <el-table-column prop="name" label="公司名称" min-width="140" />
       <el-table-column prop="industry" label="行业" width="100" />
       <el-table-column prop="city" label="城市" width="90" />
@@ -90,7 +92,6 @@ onMounted(fetchList)
     </el-table>
 
     <el-pagination
-      v-if="!keyword"
       class="pagination"
       background
       layout="total, sizes, prev, pager, next"
