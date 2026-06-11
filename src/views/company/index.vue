@@ -67,13 +67,13 @@ onMounted(fetchList)
       <el-button @click="fetchList">刷新</el-button>
     </div>
 
-    <el-table v-loading="loading" :data="list" stripe>
+    <el-table v-loading="loading" :data="list" stripe max-height="calc(100vh - 280px)">
       <el-table-column prop="name" label="公司名称" min-width="140" />
-      <el-table-column prop="industry" label="行业" width="100" />
+      <el-table-column prop="industry" label="行业" width="140" />
       <el-table-column prop="city" label="城市" width="90" />
       <el-table-column prop="companySize" label="规模" width="120" />
       <el-table-column prop="hrName" label="HR" width="90" />
-      <el-table-column prop="hrContact" label="联系方式" width="120" />
+      <el-table-column prop="hrContact" label="联系方式" width="160" />
       <el-table-column label="状态" width="80">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
