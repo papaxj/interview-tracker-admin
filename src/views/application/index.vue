@@ -27,6 +27,7 @@ const filterCompanyId = ref<number>()
 // 数据字典缓存
 const { loadDict } = useDict()
 const cityOptions = ref<SysDictItemVo[]>([])
+const scaleOptions = ref<SysDictItemVo[]>([])
 
 const companyMap = computed(() =>
   Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
@@ -233,7 +234,7 @@ onMounted(async () => {
         <el-col :span="12">
           <el-form-item label="工作城市">
             <el-select v-model="form.workCity" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="c in cityOptions" :key="c.id" :label="c.label" :value="c.label" />
+              <el-option v-for="c in cityOptions" :key="c.id" :label="c.label" :value="c.value" />
             </el-select>
           </el-form-item>
         </el-col>

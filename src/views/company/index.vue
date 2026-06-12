@@ -3,13 +3,27 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { deleteCompany, getCompanyList, type CompanyVo } from '@/api/company'
+import type { SysDictItemVo } from '@/api/dict'
 import { usePagination } from '@/composables/usePagination'
+import { useDict } from '@/composables/useDict'
 import { useAppStore } from '@/stores/app'
 import { formatDate } from '@/utils/format'
 
 const router = useRouter()
 const appStore = useAppStore()
 const keyword = ref('')
+
+// 数据字典
+const { loadDict } = useDict()
+const industryOptions = ref<SysDictItemVo[]>([])
+const cityOptions = ref<SysDictItemVo[]>([])
+const scaleOptions = ref<SysDictItemVo[]>([])
+
+function translate(value: string | undefined, options: SysDictItemVo[]) {
+  if (!value) return '-'
+  const found = options.find((item) => item.value === value || item.label === value)
+  return found?.label ?? value
+}
 
 const { loading, list, total, page, size, load, handlePageChange, handleSizeChange } =
   usePagination<CompanyVo>((p, s) =>
@@ -42,7 +56,17 @@ async function handleDelete(row: CompanyVo) {
   fetchList()
 }
 
-onMounted(fetchList)
+onMounted(async () => {
+  const [industries, cities, scales] = await Promise.all([
+    loadDict('industry'),
+    loadDict('city'),
+    loadDict('scale'),
+  ])
+  industryOptions.value = industries
+  cityOptions.value = cities
+  scaleOptions.value = scales
+  await fetchList()
+})
 </script>
 
 <template>
@@ -69,9 +93,15 @@ onMounted(fetchList)
 
     <el-table v-loading="loading" :data="list" stripe max-height="calc(100vh - 280px)">
       <el-table-column prop="name" label="公司名称" min-width="140" />
-      <el-table-column prop="industry" label="行业" width="140" />
-      <el-table-column prop="city" label="城市" width="90" />
-      <el-table-column prop="companySize" label="规模" width="120" />
+      <el-table-column label="行业" width="140">
+        <template #default="{ row }">{{ translate(row.industry, industryOptions) }}</template>
+      </el-table-column>
+      <el-table-column label="城市" width="90">
+        <template #default="{ row }">{{ translate(row.city, cityOptions) }}</template>
+      </el-table-column>
+      <el-table-column label="规模" width="120">
+        <template #default="{ row }">{{ translate(row.companySize, scaleOptions) }}</template>
+      </el-table-column>
       <el-table-column prop="hrName" label="HR" width="90" />
       <el-table-column prop="hrContact" label="联系方式" width="160" />
       <el-table-column label="状态" width="80">

@@ -16,10 +16,13 @@ import {
   type SysDictItemSaveRequest,
 } from '@/api/dict'
 import { usePagination } from '@/composables/usePagination'
+import { useDict } from '@/composables/useDict'
 
 // ==================== 字典类型 ====================
 const typeKeyword = ref('')
 const selectedTypeCode = ref('')
+
+const { clearAllCache } = useDict()
 
 const {
   loading: typeLoading,
@@ -198,6 +201,7 @@ async function submitItemForm() {
     await createDictItem(itemForm.value)
     ElMessage.success('新增成功')
   }
+  clearAllCache()
   itemDialogVisible.value = false
   fetchItemList()
 }
@@ -208,6 +212,7 @@ async function handleDeleteItem(row: SysDictItemVo) {
   })
   await deleteDictItem(row.id)
   ElMessage.success('删除成功')
+  clearAllCache()
   fetchItemList()
 }
 
@@ -223,6 +228,7 @@ async function toggleItemStatus(row: SysDictItemVo) {
     remark: row.remark,
   })
   row.status = newStatus
+  clearAllCache()
   ElMessage.success(newStatus === 1 ? '已启用' : '已停用')
 }
 

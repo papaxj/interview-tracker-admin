@@ -5,6 +5,8 @@ import * as echarts from 'echarts'
 import { getCompanyList, type CompanyVo } from '@/api/company'
 import { getJobApplicationList, type JobApplicationVo } from '@/api/application'
 import { getOfferList } from '@/api/offer'
+import type { SysDictItemVo } from '@/api/dict'
+import { useDict } from '@/composables/useDict'
 import { useAppStore } from '@/stores/app'
 import {
   OfficeBuilding,
@@ -17,6 +19,16 @@ import {
 const router = useRouter()
 const appStore = useAppStore()
 const loading = ref(false)
+
+// 行业字典
+const { loadDict } = useDict()
+const industryOptions = ref<SysDictItemVo[]>([])
+
+function translateIndustry(value: string | undefined) {
+  if (!value) return '未分类'
+  const found = industryOptions.value.find((item) => item.value === value || item.label === value)
+  return found?.label ?? value
+}
 
 // ---- 数据 ----
 const companies = ref<CompanyVo[]>([])
@@ -194,7 +206,7 @@ function renderCompanyChart() {
   if (!companyChart) companyChart = echarts.init(companyChartRef.value)
   const count: Record<string, number> = {}
   for (const c of companies.value) {
-    const ind = c.industry || '未分类'
+    const ind = translateIndustry(c.industry)
     count[ind] = (count[ind] || 0) + 1
   }
   // 按数量降序，取前8
@@ -212,7 +224,7 @@ function renderCompanyChart() {
     },
     yAxis: {
       type: 'category',
-      data: sorted.map(([k]) => k),
+      data: sorted.map(([label]) => label),
       axisLine: { lineStyle: { color: '#e5e7eb' } },
       axisTick: { show: false },
       axisLabel: { color: '#6b7280', fontSize: 11, width: 80, overflow: 'truncate' },
@@ -306,6 +318,8 @@ onMounted(async () => {
   } catch (e) {
     console.error('[Dashboard] loadMyUsers 失败:', e)
   }
+  // 加载行业字典
+  industryOptions.value = await loadDict('industry')
   await loadData()
   initDone = true
   window.addEventListener('resize', resizeCharts)

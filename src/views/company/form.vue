@@ -25,6 +25,7 @@ const { loadDict } = useDict()
 const financingStageOptions = ref<SysDictItemVo[]>([])
 const companySizeOptions = ref<SysDictItemVo[]>([])
 const cityOptions = ref<SysDictItemVo[]>([])
+const industryOptions = ref<SysDictItemVo[]>([])
 
 const isEdit = computed(() => Boolean(route.params.id))
 const companyId = computed(() => Number(route.params.id))
@@ -97,19 +98,22 @@ function goBack() {
 }
 
 onMounted(async () => {
-  const [stages, sizes, cities] = await Promise.all([
+  const [stages, sizes, cities, industries] = await Promise.all([
     loadDict('financing_stage'),
-    loadDict('company_size'),
+    loadDict('scale'),
     loadDict('city'),
+    loadDict('industry'),
   ])
   financingStageOptions.value = stages
   companySizeOptions.value = sizes
   cityOptions.value = cities
+  industryOptions.value = industries
   // 新增时默认选中 isDefault=1 的项
   if (!isEdit.value) {
-    form.city = cities.find((i) => i.isDefault === 1)?.label ?? ''
-    form.companySize = sizes.find((i) => i.isDefault === 1)?.label ?? ''
-    form.financingStage = stages.find((i) => i.isDefault === 1)?.label ?? ''
+    form.city = cities.find((i) => i.isDefault === 1)?.value ?? ''
+    form.companySize = sizes.find((i) => i.isDefault === 1)?.value ?? ''
+    form.industry = industries.find((i) => i.isDefault === 1)?.value ?? ''
+    form.financingStage = stages.find((i) => i.isDefault === 1)?.value ?? ''
   }
   await loadDetail()
 })
@@ -128,27 +132,29 @@ onMounted(async () => {
         </el-col>
         <el-col :span="8">
           <el-form-item label="行业">
-            <el-input v-model="form.industry" placeholder="如：互联网" />
+            <el-select v-model="form.industry" placeholder="请选择" style="width: 100%" clearable>
+              <el-option v-for="s in industryOptions" :key="s.id" :label="s.label" :value="s.value" />
+            </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="城市">
             <el-select v-model="form.city" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in cityOptions" :key="s.id" :label="s.label" :value="s.label" />
+              <el-option v-for="s in cityOptions" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="公司规模">
             <el-select v-model="form.companySize" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in companySizeOptions" :key="s.id" :label="s.label" :value="s.label" />
+              <el-option v-for="s in companySizeOptions" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="融资阶段">
             <el-select v-model="form.financingStage" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in financingStageOptions" :key="s.id" :label="s.label" :value="s.label" />
+              <el-option v-for="s in financingStageOptions" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
