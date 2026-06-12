@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import {
   createDictItem,
   deleteDictItem,
@@ -129,7 +129,7 @@ async function handleDelete(row: SysDictItemVo) {
     fetchList()
     emit('changed')
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '删除失败')
+    ElNotification({ title: '删除失败', message: e instanceof Error ? e.message : '删除失败', type: 'error', duration: 0 })
   }
 }
 

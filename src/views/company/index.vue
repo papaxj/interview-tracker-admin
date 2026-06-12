@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { deleteCompany, getCompanyList, type CompanyVo } from '@/api/company'
 import { usePagination } from '@/composables/usePagination'
 import { useDict } from '@/composables/useDict'
@@ -47,7 +47,7 @@ async function handleDelete(row: CompanyVo) {
     clearAllCache()
     fetchList()
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '删除失败')
+    ElNotification({ title: '删除失败', message: e instanceof Error ? e.message : '删除失败', type: 'error', duration: 0 })
   }
 }
 

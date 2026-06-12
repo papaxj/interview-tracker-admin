@@ -1,6 +1,6 @@
 import { computed, reactive, ref } from 'vue'
 import type { FormInstance } from 'element-plus'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 
 export interface UseCrudDialogOptions<TForm extends Record<string, unknown>> {
   /** 实体名称，用于弹窗标题和提示信息，例如 '投递'、'面试'、'Offer' */
@@ -75,7 +75,7 @@ export function useCrudDialog<TForm extends Record<string, unknown>>(
       await options.onSaved()
       return true
     } catch (e) {
-      ElMessage.error(e instanceof Error ? e.message : '操作失败')
+      ElNotification({ title: '操作失败', message: e instanceof Error ? e.message : '操作失败', type: 'error', duration: 0 })
       return false
     } finally {
       submitting.value = false
@@ -96,7 +96,7 @@ export function useCrudDialog<TForm extends Record<string, unknown>>(
       ElMessage.success('删除成功')
       await options.onSaved()
     } catch (e) {
-      ElMessage.error(e instanceof Error ? e.message : '删除失败')
+      ElNotification({ title: '删除失败', message: e instanceof Error ? e.message : '删除失败', type: 'error', duration: 0 })
     }
   }
 
