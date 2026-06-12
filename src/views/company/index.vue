@@ -41,10 +41,14 @@ function goForm(id?: number) {
 
 async function handleDelete(row: CompanyVo) {
   await ElMessageBox.confirm(`确定删除公司「${row.name}」？`, '提示', { type: 'warning' })
-  await deleteCompany(row.id)
-  ElMessage.success('删除成功')
-  clearAllCache()
-  fetchList()
+  try {
+    await deleteCompany(row.id)
+    ElMessage.success('删除成功')
+    clearAllCache()
+    fetchList()
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '删除失败')
+  }
 }
 
 onMounted(async () => {

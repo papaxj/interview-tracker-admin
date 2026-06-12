@@ -122,11 +122,15 @@ async function handleDelete(row: SysDictItemVo) {
   await ElMessageBox.confirm(`确定删除字典项「${row.label}」？`, '提示', {
     type: 'warning',
   })
-  await deleteDictItem(row.id)
-  ElMessage.success('删除成功')
-  clearAllCache()
-  fetchList()
-  emit('changed')
+  try {
+    await deleteDictItem(row.id)
+    ElMessage.success('删除成功')
+    clearAllCache()
+    fetchList()
+    emit('changed')
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '删除失败')
+  }
 }
 
 async function toggleStatus(row: SysDictItemVo) {

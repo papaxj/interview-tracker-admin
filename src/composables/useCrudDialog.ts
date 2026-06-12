@@ -74,6 +74,9 @@ export function useCrudDialog<TForm extends Record<string, unknown>>(
       dialogVisible.value = false
       await options.onSaved()
       return true
+    } catch (e) {
+      ElMessage.error(e instanceof Error ? e.message : '操作失败')
+      return false
     } finally {
       submitting.value = false
     }
@@ -88,9 +91,13 @@ export function useCrudDialog<TForm extends Record<string, unknown>>(
     await ElMessageBox.confirm(`确定删除${options.label}「${name}」？`, '提示', {
       type: 'warning',
     })
-    await deleteApi()
-    ElMessage.success('删除成功')
-    await options.onSaved()
+    try {
+      await deleteApi()
+      ElMessage.success('删除成功')
+      await options.onSaved()
+    } catch (e) {
+      ElMessage.error(e instanceof Error ? e.message : '删除失败')
+    }
   }
 
   return {

@@ -91,9 +91,13 @@ async function handleDelete(row: SysDictTypeVo) {
   await ElMessageBox.confirm(`确定删除字典类型「${row.dictName}」？`, '提示', {
     type: 'warning',
   })
-  await deleteDictType(row.id)
-  ElMessage.success('删除成功')
-  fetchList()
+  try {
+    await deleteDictType(row.id)
+    ElMessage.success('删除成功')
+    fetchList()
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '删除失败')
+  }
 }
 
 function onRowClick(row: SysDictTypeVo) {
