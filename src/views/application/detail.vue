@@ -17,8 +17,7 @@ import {
 } from '@/api/interview'
 import { getOfferList } from '@/api/offer'
 import type { OfferInfoVo } from '@/api/offer'
-import type { SysDictItemVo } from '@/api/dict'
-import { useDict } from '@/composables/useDict'
+import { useDictLabel } from '@/composables/useDictLabel'
 import { useCrudDialog } from '@/composables/useCrudDialog'
 import { INTERVIEW_RESULT } from '@/constants/enums'
 import { formatDate, formatMoney, formatSalary } from '@/utils/format'
@@ -33,9 +32,8 @@ const companyName = ref('')
 const rounds = ref<InterviewRoundVo[]>([])
 const offers = ref<OfferInfoVo[]>([])
 
-// 数据字典缓存
-const { loadDict } = useDict()
-const interviewMethodOptions = ref<SysDictItemVo[]>([])
+// 数据字典
+const { getOptions, loadDicts } = useDictLabel()
 
 const defaultRoundForm = (): InterviewRoundSaveRequest => ({
   applicationId: applicationId.value,
@@ -139,7 +137,7 @@ function goBack() {
 }
 
 onMounted(async () => {
-  interviewMethodOptions.value = await loadDict('interview_method')
+  await loadDicts(['interview_method'])
   await loadData()
 })
 </script>
@@ -244,7 +242,7 @@ onMounted(async () => {
         </el-form-item>
         <el-form-item label="面试方式">
           <el-select v-model="roundForm.interviewMethod" placeholder="请选择" style="width: 100%" clearable>
-            <el-option v-for="m in interviewMethodOptions" :key="m.id" :label="m.label" :value="m.label" />
+            <el-option v-for="m in getOptions('interview_method')" :key="m.id" :label="m.label" :value="m.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="面试时间">

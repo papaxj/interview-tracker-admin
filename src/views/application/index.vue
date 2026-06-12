@@ -11,9 +11,8 @@ import {
   type JobApplicationVo,
 } from '@/api/application'
 import { getCompanyList, type CompanyVo } from '@/api/company'
-import type { SysDictItemVo } from '@/api/dict'
 import { usePagination } from '@/composables/usePagination'
-import { useDict } from '@/composables/useDict'
+import { useDictLabel } from '@/composables/useDictLabel'
 import { useCrudDialog } from '@/composables/useCrudDialog'
 import { APPLICATION_STATUS, PRIORITY_LEVEL } from '@/constants/enums'
 import { useAppStore } from '@/stores/app'
@@ -24,10 +23,7 @@ const appStore = useAppStore()
 const companies = ref<CompanyVo[]>([])
 const filterCompanyId = ref<number>()
 
-// 数据字典缓存
-const { loadDict } = useDict()
-const cityOptions = ref<SysDictItemVo[]>([])
-const scaleOptions = ref<SysDictItemVo[]>([])
+const { getOptions, loadDicts } = useDictLabel()
 
 const companyMap = computed(() =>
   Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
@@ -129,8 +125,7 @@ function goDetail(id: number) {
 }
 
 onMounted(async () => {
-  const cities = await loadDict('city')
-  cityOptions.value = cities
+  await loadDicts(['city'])
   await fetchCompanies()
   await load()
 })
@@ -234,7 +229,7 @@ onMounted(async () => {
         <el-col :span="12">
           <el-form-item label="工作城市">
             <el-select v-model="form.workCity" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="c in cityOptions" :key="c.id" :label="c.label" :value="c.value" />
+              <el-option v-for="c in getOptions('city')" :key="c.id" :label="c.label" :value="c.value" />
             </el-select>
           </el-form-item>
         </el-col>
@@ -277,5 +272,3 @@ onMounted(async () => {
     </template>
   </el-dialog>
 </template>
-
-

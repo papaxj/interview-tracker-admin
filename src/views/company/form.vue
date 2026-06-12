@@ -9,8 +9,7 @@ import {
   updateCompany,
   type CompanySaveRequest,
 } from '@/api/company'
-import type { SysDictItemVo } from '@/api/dict'
-import { useDict } from '@/composables/useDict'
+import { useDictLabel } from '@/composables/useDictLabel'
 import { useAppStore } from '@/stores/app'
 
 const route = useRoute()
@@ -20,12 +19,7 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
 
-// 数据字典缓存
-const { loadDict } = useDict()
-const financingStageOptions = ref<SysDictItemVo[]>([])
-const companySizeOptions = ref<SysDictItemVo[]>([])
-const cityOptions = ref<SysDictItemVo[]>([])
-const industryOptions = ref<SysDictItemVo[]>([])
+const { getOptions, loadDicts } = useDictLabel()
 
 const isEdit = computed(() => Boolean(route.params.id))
 const companyId = computed(() => Number(route.params.id))
@@ -98,22 +92,17 @@ function goBack() {
 }
 
 onMounted(async () => {
-  const [stages, sizes, cities, industries] = await Promise.all([
-    loadDict('financing_stage'),
-    loadDict('scale'),
-    loadDict('city'),
-    loadDict('industry'),
-  ])
-  financingStageOptions.value = stages
-  companySizeOptions.value = sizes
-  cityOptions.value = cities
-  industryOptions.value = industries
+  await loadDicts(['financing_stage', 'scale', 'city', 'industry'])
   // 新增时默认选中 isDefault=1 的项
   if (!isEdit.value) {
-    form.city = cities.find((i) => i.isDefault === 1)?.value ?? ''
-    form.companySize = sizes.find((i) => i.isDefault === 1)?.value ?? ''
-    form.industry = industries.find((i) => i.isDefault === 1)?.value ?? ''
-    form.financingStage = stages.find((i) => i.isDefault === 1)?.value ?? ''
+    const cityDefault = getOptions('city').find((i) => i.isDefault === 1)
+    const sizeDefault = getOptions('scale').find((i) => i.isDefault === 1)
+    const industryDefault = getOptions('industry').find((i) => i.isDefault === 1)
+    const stageDefault = getOptions('financing_stage').find((i) => i.isDefault === 1)
+    form.city = cityDefault?.value ?? ''
+    form.companySize = sizeDefault?.value ?? ''
+    form.industry = industryDefault?.value ?? ''
+    form.financingStage = stageDefault?.value ?? ''
   }
   await loadDetail()
 })
@@ -133,28 +122,28 @@ onMounted(async () => {
         <el-col :span="8">
           <el-form-item label="行业">
             <el-select v-model="form.industry" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in industryOptions" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions('industry')" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="城市">
             <el-select v-model="form.city" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in cityOptions" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions('city')" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="公司规模">
             <el-select v-model="form.companySize" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in companySizeOptions" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions('scale')" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="融资阶段">
             <el-select v-model="form.financingStage" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in financingStageOptions" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions('financing_stage')" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
