@@ -137,7 +137,7 @@ function goBack() {
 }
 
 onMounted(async () => {
-  await loadDicts(['interview_method', 'city'])
+  await loadDicts(['interview_method', 'city', 'source'])
   await loadData()
 })
 </script>
@@ -164,7 +164,7 @@ onMounted(async () => {
               {{ formatSalary(application?.salaryMin, application?.salaryMax, application?.salaryMonths) }}
             </el-descriptions-item>
             <el-descriptions-item label="投递日期">{{ formatDate(application?.applyDate)?.slice(0, 10) }}</el-descriptions-item>
-            <el-descriptions-item label="来源">{{ application?.source || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="来源">{{ translate('source', application?.source) }}</el-descriptions-item>
             <el-descriptions-item label="链接">
               <a v-if="application?.sourceLink" :href="application.sourceLink" target="_blank">查看</a>
               <span v-else>-</span>

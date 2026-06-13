@@ -125,7 +125,7 @@ function goDetail(id: number) {
 }
 
 onMounted(async () => {
-  await loadDicts(['city'])
+  await loadDicts(['city', 'source'])
   await fetchCompanies()
   await load()
 })
@@ -262,7 +262,9 @@ onMounted(async () => {
         <el-date-picker v-model="form.applyDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
       </el-form-item>
       <el-form-item label="来源">
-        <el-input v-model="form.source" placeholder="Boss直聘 / 内推等" />
+        <el-select v-model="form.source" placeholder="请选择" style="width: 100%" clearable>
+          <el-option v-for="opt in getOptions('source')" :key="opt.id" :label="opt.label" :value="opt.value" />
+        </el-select>
       </el-form-item>
       <el-form-item label="备注">
         <el-input v-model="form.remark" type="textarea" :rows="2" />

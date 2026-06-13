@@ -1,14 +1,8 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { Expand, Fold } from '@element-plus/icons-vue'
-import UserSelect from '@/components/common/UserSelect.vue'
 
 const appStore = useAppStore()
-
-onMounted(() => {
-  appStore.loadMyUsers()
-})
 </script>
 
 <template>
@@ -21,10 +15,6 @@ onMounted(() => {
       />
       <span class="app-header__logo">AT</span>
       <span class="app-header__title">面试追踪</span>
-    </div>
-    <div class="app-header__right">
-      <span class="app-header__label">用户</span>
-      <UserSelect />
     </div>
   </header>
 </template>
@@ -65,22 +55,6 @@ onMounted(() => {
     font-size: 14px;
     font-weight: 600;
     color: $text-color;
-  }
-
-  &__right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  &__label {
-    font-size: 12px;
-    color: $text-secondary;
-  }
-
-  &__logout {
-    font-size: 13px;
-    color: $text-secondary;
   }
 }
 </style>
