@@ -23,7 +23,7 @@ const appStore = useAppStore()
 const companies = ref<CompanyVo[]>([])
 const filterCompanyId = ref<number>()
 
-const { getOptions, loadDicts } = useDictLabel()
+const { translate, getOptions, loadDicts } = useDictLabel()
 
 const companyMap = computed(() =>
   Object.fromEntries(companies.value.map((c) => [c.id, c.name])),
@@ -169,7 +169,9 @@ onMounted(async () => {
       <el-table-column label="公司" min-width="120">
         <template #default="{ row }">{{ companyMap[row.companyId!] ?? row.companyId }}</template>
       </el-table-column>
-      <el-table-column prop="workCity" label="城市" width="80" />
+      <el-table-column label="城市" width="80">
+          <template #default="{ row }">{{ translate('city', row.workCity) }}</template>
+        </el-table-column>
       <el-table-column label="薪资" width="130">
         <template #default="{ row }">
           {{ formatSalary(row.salaryMin, row.salaryMax, row.salaryMonths) }}

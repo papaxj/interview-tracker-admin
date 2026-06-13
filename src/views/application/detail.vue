@@ -33,7 +33,7 @@ const rounds = ref<InterviewRoundVo[]>([])
 const offers = ref<OfferInfoVo[]>([])
 
 // 数据字典
-const { getOptions, loadDicts } = useDictLabel()
+const { translate, getOptions, loadDicts } = useDictLabel()
 
 const defaultRoundForm = (): InterviewRoundSaveRequest => ({
   applicationId: applicationId.value,
@@ -137,7 +137,7 @@ function goBack() {
 }
 
 onMounted(async () => {
-  await loadDicts(['interview_method'])
+  await loadDicts(['interview_method', 'city'])
   await loadData()
 })
 </script>
@@ -159,7 +159,7 @@ onMounted(async () => {
             <el-descriptions-item label="公司">{{ companyName || application?.companyId }}</el-descriptions-item>
             <el-descriptions-item label="岗位">{{ application?.positionName }}</el-descriptions-item>
             <el-descriptions-item label="部门">{{ application?.department || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="城市">{{ application?.workCity || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="城市">{{ translate('city', application?.workCity) }}</el-descriptions-item>
             <el-descriptions-item label="薪资">
               {{ formatSalary(application?.salaryMin, application?.salaryMax, application?.salaryMonths) }}
             </el-descriptions-item>
@@ -185,7 +185,9 @@ onMounted(async () => {
           <el-table :data="rounds" stripe>
             <el-table-column prop="roundNo" label="轮次" width="60" />
             <el-table-column prop="roundType" label="类型" width="100" />
-            <el-table-column prop="interviewMethod" label="面试方式" width="90" />
+            <el-table-column label="面试方式" width="90">
+              <template #default="{ row }">{{ translate('interview_method', row.interviewMethod) }}</template>
+            </el-table-column>
             <el-table-column prop="interviewer" label="面试官" width="90" />
             <el-table-column label="面试时间" min-width="150">
               <template #default="{ row }">{{ formatDate(row.interviewTime) }}</template>
