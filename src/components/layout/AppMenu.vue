@@ -18,7 +18,7 @@ const appStore = useAppStore()
 const activeMenu = computed(() => route.path)
 
 const menuItems = [
-  { path: '/dashboard', title: '仪表盘', icon: DataBoard },
+  { path: '/dashboard', title: 'Dashboard', icon: DataBoard },
   { path: '/company', title: '公司管理', icon: OfficeBuilding },
   { path: '/application', title: '投递记录', icon: Document },
   { path: '/offer', title: 'Offer', icon: Trophy },
