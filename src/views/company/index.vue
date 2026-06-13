@@ -76,7 +76,7 @@ onMounted(async () => {
         @keyup.enter="handleSearch"
         @clear="handleSearch"
       />
-      <el-button @click="fetchList">刷新</el-button>
+      <el-button @click="fetchList">查询</el-button>
     </div>
 
     <el-table v-loading="loading" :data="list" stripe max-height="calc(100vh - 280px)">

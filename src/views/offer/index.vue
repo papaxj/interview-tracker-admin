@@ -124,7 +124,7 @@ onMounted(async () => {
       <el-select v-model="filterStatus" placeholder="筛选状态" clearable style="width: 140px" @change="load">
         <el-option v-for="s in OFFER_STATUS" :key="s.value" :label="s.label" :value="s.value" />
       </el-select>
-      <el-button @click="load">刷新</el-button>
+      <el-button @click="load">查询</el-button>
     </div>
 
     <el-table v-loading="loading" :data="list" stripe>

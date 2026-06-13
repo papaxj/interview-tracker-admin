@@ -152,7 +152,7 @@ onMounted(async () => {
       >
         <el-option v-for="c in companies" :key="c.id" :label="c.name" :value="c.id" />
       </el-select>
-      <el-button @click="load">刷新</el-button>
+      <el-button @click="load">查询</el-button>
     </div>
 
     <el-alert
