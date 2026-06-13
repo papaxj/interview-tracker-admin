@@ -113,7 +113,7 @@ onMounted(async () => {
       stripe
     >
       <el-table-column type="index" label="#" width="50" />
-      <el-table-column prop="name" label="姓名" width="100" />
+      <el-table-column prop="name" label="姓名" width="200" />
       <el-table-column prop="idCard" label="身份证号" width="180" />
       <el-table-column prop="gender" label="性别" width="80">
         <template #default="{ row }">
