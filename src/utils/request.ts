@@ -1,6 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
-import { getToken, removeToken } from './auth'
-import router from '@/router'
+import { getToken } from './auth'
 
 const http: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -21,12 +20,6 @@ http.interceptors.response.use(
   (err) => {
     const data = err.response?.data as { message?: string } | undefined
     const message = data?.message || err.message || '请求失败'
-
-    if (err.response?.status === 401) {
-      removeToken()
-      router.push('/login')
-    }
-
     return Promise.reject(new Error(message))
   },
 )

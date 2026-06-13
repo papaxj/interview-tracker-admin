@@ -1,25 +1,14 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { useUserStore } from '@/stores/user'
-import { removeToken } from '@/utils/auth'
 import { Expand, Fold } from '@element-plus/icons-vue'
 import UserSelect from '@/components/common/UserSelect.vue'
 
-const router = useRouter()
 const appStore = useAppStore()
-const userStore = useUserStore()
 
 onMounted(() => {
   appStore.loadMyUsers()
 })
-
-function handleLogout() {
-  removeToken()
-  userStore.clearProfile()
-  router.push('/login')
-}
 </script>
 
 <template>
@@ -36,7 +25,6 @@ function handleLogout() {
     <div class="app-header__right">
       <span class="app-header__label">用户</span>
       <UserSelect />
-      <el-button text class="app-header__logout" @click="handleLogout">退出</el-button>
     </div>
   </header>
 </template>

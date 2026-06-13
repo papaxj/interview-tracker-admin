@@ -1,0 +1,1 @@
+import{r as e}from"./index-CGBSQTUu.js";function t(t){return e.get(`/offers`,{params:t})}function n(t){return e.post(`/offers`,t)}function r(t,n){return e.put(`/offers/${t}`,n)}function i(t){return e.delete(`/offers/${t}`)}export{r as i,i as n,t as r,n as t};

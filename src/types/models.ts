@@ -7,4 +7,4 @@ export type { InterviewRoundVo, InterviewRoundSaveRequest } from '@/api/intervie
 export type { InterviewQuestionVo, InterviewQuestionSaveRequest } from '@/api/interview-question'
 export type { OfferInfoVo, OfferInfoSaveRequest } from '@/api/offer'
 export type { MyUserVo } from '@/api/my-user'
-export type { SysUserVo, LoginParams } from '@/api/user'
+export type { SysUserVo } from '@/api/user'

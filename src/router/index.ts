@@ -1,15 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import Layout from '@/layout/index.vue'
-import { getToken } from '@/utils/auth'
 
 const routes: RouteRecordRaw[] = [
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/login/index.vue'),
-    meta: { public: true },
-  },
   {
     path: '/',
     component: Layout,
@@ -52,6 +45,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Offer' },
       },
       {
+        path: 'identity',
+        name: 'Identity',
+        component: () => import('@/views/identity/index.vue'),
+        meta: { title: '身份信息查询' },
+      },
+      {
         path: 'dict',
         name: 'Dict',
         component: () => import('@/views/dict/index.vue'),
@@ -64,18 +63,6 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
-
-router.beforeEach((to, _from, next) => {
-  if (to.meta.public) {
-    next()
-    return
-  }
-  if (!getToken()) {
-    next({ path: '/login', query: { redirect: to.fullPath } })
-    return
-  }
-  next()
 })
 
 export default router

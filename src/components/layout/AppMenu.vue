@@ -8,6 +8,7 @@ import {
   Document,
   Trophy,
   Collection,
+  User,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -21,6 +22,7 @@ const menuItems = [
   { path: '/company', title: '公司管理', icon: OfficeBuilding },
   { path: '/application', title: '投递记录', icon: Document },
   { path: '/offer', title: 'Offer', icon: Trophy },
+  { path: '/identity', title: '身份信息查询', icon: User },
   { path: '/dict', title: '数据字典', icon: Collection },
 ]
 
