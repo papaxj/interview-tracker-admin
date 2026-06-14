@@ -11,6 +11,7 @@ import {
 } from '@/api/company'
 import { useDictLabel } from '@/composables/useDictLabel'
 import { useAppStore } from '@/stores/app'
+import { DICT, COMPANY_FORM_DICTS } from '@/constants/dict-keys'
 
 const route = useRoute()
 const router = useRouter()
@@ -92,13 +93,13 @@ function goBack() {
 }
 
 onMounted(async () => {
-  await loadDicts(['financing_stage', 'scale', 'city', 'industry'])
+  await loadDicts(COMPANY_FORM_DICTS)
   // 新增时默认选中 isDefault=1 的项
   if (!isEdit.value) {
-    const cityDefault = getOptions('city').find((i) => i.isDefault === 1)
-    const sizeDefault = getOptions('scale').find((i) => i.isDefault === 1)
-    const industryDefault = getOptions('industry').find((i) => i.isDefault === 1)
-    const stageDefault = getOptions('financing_stage').find((i) => i.isDefault === 1)
+    const cityDefault = getOptions(DICT.CITY).find((i) => i.isDefault === 1)
+    const sizeDefault = getOptions(DICT.SCALE).find((i) => i.isDefault === 1)
+    const industryDefault = getOptions(DICT.INDUSTRY).find((i) => i.isDefault === 1)
+    const stageDefault = getOptions(DICT.FINANCING_STAGE).find((i) => i.isDefault === 1)
     form.city = cityDefault?.value ?? ''
     form.companySize = sizeDefault?.value ?? ''
     form.industry = industryDefault?.value ?? ''
@@ -122,28 +123,28 @@ onMounted(async () => {
         <el-col :span="8">
           <el-form-item label="行业">
             <el-select v-model="form.industry" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in getOptions('industry')" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions(DICT.INDUSTRY)" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="城市">
             <el-select v-model="form.city" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in getOptions('city')" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions(DICT.CITY)" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="公司规模">
             <el-select v-model="form.companySize" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in getOptions('scale')" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions(DICT.SCALE)" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="融资阶段">
             <el-select v-model="form.financingStage" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="s in getOptions('financing_stage')" :key="s.id" :label="s.label" :value="s.value" />
+              <el-option v-for="s in getOptions(DICT.FINANCING_STAGE)" :key="s.id" :label="s.label" :value="s.value" />
             </el-select>
           </el-form-item>
         </el-col>

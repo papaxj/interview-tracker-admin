@@ -15,6 +15,7 @@ import { usePagination } from '@/composables/usePagination'
 import { useDictLabel } from '@/composables/useDictLabel'
 import { useCrudDialog } from '@/composables/useCrudDialog'
 import { APPLICATION_STATUS, PRIORITY_LEVEL } from '@/constants/enums'
+import { DICT, APPLICATION_DICTS } from '@/constants/dict-keys'
 import { useAppStore } from '@/stores/app'
 import { formatDate, formatSalary } from '@/utils/format'
 
@@ -125,7 +126,7 @@ function goDetail(id: number) {
 }
 
 onMounted(async () => {
-  await loadDicts(['city', 'source'])
+  await loadDicts(APPLICATION_DICTS)
   await fetchCompanies()
   await load()
 })
@@ -170,7 +171,7 @@ onMounted(async () => {
         <template #default="{ row }">{{ companyMap[row.companyId!] ?? row.companyId }}</template>
       </el-table-column>
       <el-table-column label="城市" width="80">
-          <template #default="{ row }">{{ translate('city', row.workCity) }}</template>
+          <template #default="{ row }">{{ translate(DICT.CITY, row.workCity) }}</template>
         </el-table-column>
       <el-table-column label="薪资" width="130">
         <template #default="{ row }">
@@ -231,7 +232,7 @@ onMounted(async () => {
         <el-col :span="12">
           <el-form-item label="工作城市">
             <el-select v-model="form.workCity" placeholder="请选择" style="width: 100%" clearable>
-              <el-option v-for="c in getOptions('city')" :key="c.id" :label="c.label" :value="c.value" />
+              <el-option v-for="c in getOptions(DICT.CITY)" :key="c.id" :label="c.label" :value="c.value" />
             </el-select>
           </el-form-item>
         </el-col>
@@ -263,7 +264,7 @@ onMounted(async () => {
       </el-form-item>
       <el-form-item label="来源">
         <el-select v-model="form.source" placeholder="请选择" style="width: 100%" clearable>
-          <el-option v-for="opt in getOptions('source')" :key="opt.id" :label="opt.label" :value="opt.value" />
+          <el-option v-for="opt in getOptions(DICT.SOURCE)" :key="opt.id" :label="opt.label" :value="opt.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="备注">
