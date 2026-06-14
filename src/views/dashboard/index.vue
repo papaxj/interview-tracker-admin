@@ -245,7 +245,7 @@ function renderCityChart() {
   if (!cityChart) cityChart = echarts.init(cityChartRef.value)
   const count: Record<string, number> = {}
   for (const app of allApps.value) {
-    const city = app.workCity || '未知'
+    const city = translate('city', app.workCity) || app.workCity || '未知'
     count[city] = (count[city] || 0) + 1
   }
   const sorted = Object.entries(count)
@@ -311,7 +311,7 @@ onMounted(async () => {
     console.error('[Dashboard] loadMyUsers 失败:', e)
   }
   // 加载行业字典
-  await loadDicts(['industry'])
+  await loadDicts(['industry', 'city'])
   await loadData()
   initDone = true
   window.addEventListener('resize', resizeCharts)
