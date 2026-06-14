@@ -10,6 +10,7 @@ export interface IdentityInfoVo {
   address: string
   mobile: string
   email: string
+  carrier: string
   createTime: string
 }
 

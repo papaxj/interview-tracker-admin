@@ -123,6 +123,7 @@ onMounted(async () => {
       <el-table-column prop="birthday" label="出生日期" width="110" />
       <el-table-column prop="mobile" label="手机号" width="130" />
       <el-table-column prop="email" label="邮箱" min-width="180" />
+      <el-table-column prop="carrier" label="运营商" width="100" />
       <el-table-column prop="address" label="地址" min-width="200" />
       <el-table-column label="创建时间" width="160">
         <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
