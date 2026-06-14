@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -12,13 +12,18 @@ import {
 import { useDictLabel } from '@/composables/useDictLabel'
 import { useAppStore } from '@/stores/app'
 import { DICT, COMPANY_FORM_DICTS } from '@/constants/dict-keys'
+import { useTencentMap } from '@/composables/useTencentMap'
 
 const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
+const { initMap, error: mapError } = useTencentMap()
+
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitting = ref(false)
+const latitude = ref<number | undefined>(undefined)
+const longitude = ref<number | undefined>(undefined)
 
 const { getOptions, loadDicts } = useDictLabel()
 
@@ -63,6 +68,10 @@ async function loadDetail() {
       remark: data.remark ?? '',
       status: data.status ?? 1,
     })
+    latitude.value = data.latitude
+    longitude.value = data.longitude
+    await nextTick()
+    initMap('tencent-map-container', latitude.value, longitude.value)
   } finally {
     loading.value = false
   }
@@ -188,5 +197,49 @@ onMounted(async () => {
         <el-button @click="goBack">取消</el-button>
       </el-form-item>
     </el-form>
+
+    <div v-if="isEdit" class="map-section">
+      <div class="map-section__title">公司位置</div>
+      <div
+        id="tencent-map-container"
+        class="tencent-map-container"
+        v-if="latitude && longitude && !mapError"
+      />
+      <p v-else-if="mapError" class="map-error">{{ mapError }}</p>
+      <p v-else class="map-empty">暂无位置信息</p>
+    </div>
   </el-card>
 </template>
+
+<style scoped lang="scss">
+@use '@/styles/variables.scss' as *;
+
+.map-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #ebeef5;
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-color;
+    margin-bottom: 12px;
+  }
+}
+
+.tencent-map-container {
+  width: 100%;
+  height: 560px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f7fa;
+}
+
+.map-error,
+.map-empty {
+  color: $text-secondary;
+  font-size: 13px;
+  text-align: center;
+  padding: 40px 0;
+}
+</style>

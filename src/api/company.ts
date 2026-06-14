@@ -15,6 +15,8 @@ export interface CompanyVo {
   hrContact?: string
   remark?: string
   status?: number
+  latitude?: number
+  longitude?: number
   createdAt?: string
   updatedAt?: string
 }
