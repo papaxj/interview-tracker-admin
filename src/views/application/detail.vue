@@ -220,7 +220,6 @@ onMounted(async () => {
             <div>状态：{{ offer.status || '-' }}</div>
             <div>Offer日期：{{ formatDate(offer.offerDate)?.slice(0, 10) }}</div>
           </div>
-          <div v-if="offers.length" class="pass-stamp" title="已确认 Offer">PASS</div>
         </el-card>
       </el-col>
     </el-row>
@@ -277,8 +276,6 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .offer-card {
-  position: relative;
-  overflow: hidden;
 }
 
 .offer-item {
@@ -294,27 +291,5 @@ onMounted(async () => {
   &__salary {
     font-weight: 600;
   }
-}
-
-.pass-stamp {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 72px;
-  height: 72px;
-  transform: translate(-50%, -50%) rotate(-18deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 900;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  color: #c0392b;
-  border: 3px solid #c0392b;
-  border-radius: 50%;
-  opacity: 0.55;
-  letter-spacing: 1px;
-  user-select: none;
-  pointer-events: none;
 }
 </style>
